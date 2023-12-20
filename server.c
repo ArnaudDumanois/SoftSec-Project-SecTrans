@@ -11,7 +11,7 @@ static void (*get_msg)(char message[1024]);
 
 static void *libraryHandle;
 
-void loadLibrary() {
+void loadLibrary_server() {
     libraryHandle = dlopen("libserver.so", RTLD_LAZY);
     if (!libraryHandle) {
         fprintf(stderr, "%s\n", dlerror());
@@ -34,7 +34,7 @@ void loadLibrary() {
     }
 }
 
-void unloadLibrary() {
+void unloadLibrary_server() {
     dlclose(libraryHandle);
 }
 

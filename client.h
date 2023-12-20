@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 
+void unloadLibrary_client();
+void loadLibrary_client();
+
 /* send message (maximum size: 1024 bytes) */
 int sndmsg(char msg[1024], int port);
 

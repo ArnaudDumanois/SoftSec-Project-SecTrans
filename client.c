@@ -8,7 +8,7 @@ static void (*snd_msg)(char msg[1024], int port);
 
 static void *libraryHandle;
 
-void loadLibrary() {
+void loadLibrary_client() {
     libraryHandle = dlopen("libserver.so", RTLD_LAZY);
     if (!libraryHandle) {
         fprintf(stderr, "%s\n", dlerror());
@@ -21,7 +21,7 @@ void loadLibrary() {
     }
 }
 
-void unloadLibrary() {
+void unloadLibrary_client() {
     dlclose(libraryHandle);
 }
 

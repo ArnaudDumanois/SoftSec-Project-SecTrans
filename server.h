@@ -11,6 +11,9 @@
 #include <unistd.h>
 #include <dlfcn.h>
 
+void loadLibrary_server();
+void unloadLibrary_server();
+
 int startserver(int port);
 int stopserver();
 

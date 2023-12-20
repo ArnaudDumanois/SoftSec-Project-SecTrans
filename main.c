@@ -6,10 +6,10 @@
 #include "server.h"
 
 int main() {
-    // Initialisation du serveur
-    int port = 1;  // Choisissez le port selon vos besoins
-    printf("Démarrage du serveur avec le port %d...\n", port);
-    int serverStatus = startserver(port);
+    loadLibrary_server();
+    printf("Démarrage du serveur avec le 2000\n");
+    int serverStatus = startserver(2000);
+    printf("Serveur démarré avec le status %d\n", serverStatus);
     if (serverStatus == -1) {
         printf("Erreur lors du démarrage du serveur\n");
         return -1;
