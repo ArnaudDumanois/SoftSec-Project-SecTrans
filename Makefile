@@ -1,17 +1,25 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -pedantic -std=c11
-LDFLAGS = -L. -lclient -lserver
+CFLAGS = -Wall -Werror -g
 
-all: main
+all: SecTrans
 
-main: main.c libclient.so libserver.so
-	$(CC) $(CFLAGS) -o main main.c $(LDFLAGS)
+SecTrans: main.o libclient.so libserver.so
+	$(CC) main.o -o SecTrans -L. -lclient -lserver -Wl,-rpath=.
 
-libclient.so: client.c client.h
-	$(CC) $(CFLAGS) -fPIC -shared -o libclient.so client.c
+main.o: main.c client.h server.h
+	$(CC) $(CFLAGS) -c main.c -o main.o
 
-libserver.so: server.c server.h
-	$(CC) $(CFLAGS) -fPIC -shared -o libserver.so server.c
+libclient.so: client.o
+	$(CC) -shared -o libclient.so client.o
+
+libserver.so: server.o
+	$(CC) -shared -o libserver.so server.o
+
+client.o: client.c client.h
+	$(CC) $(CFLAGS) -fPIC -c client.c -o client.o
+
+server.o: server.c server.h
+	$(CC) $(CFLAGS) -fPIC -c server.c -o server.o
 
 clean:
-	rm -f main libclient.so libserver.so
+	rm -f *.o SecTrans

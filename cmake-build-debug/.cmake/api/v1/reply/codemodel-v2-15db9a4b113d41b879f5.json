@@ -1,0 +1,60 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.27"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "SoftSec_Project_SecTrans",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "SoftSec_Project_SecTrans::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-SoftSec_Project_SecTrans-Debug-4b30f65f3bfdf51f1194.json",
+					"name" : "SoftSec_Project_SecTrans",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/arnau/Documents/PNS/SI4/S7/Secu/SoftSec-Project-SecTrans/cmake-build-debug",
+		"source" : "C:/Users/arnau/Documents/PNS/SI4/S7/Secu/SoftSec-Project-SecTrans"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}
