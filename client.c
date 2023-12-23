@@ -24,9 +24,9 @@ void unloadLibrary_client() {
     dlclose(libraryHandle);
 }
 
-
 int main(int argc, char *argv[]) {
     loadLibrary_client();
-    printf("Client is launched !\n");
+    sndmsg("test",2000);
+    printf("Message sent !\n");
     return 0;
 }

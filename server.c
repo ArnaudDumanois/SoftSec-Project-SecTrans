@@ -2,6 +2,8 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <string.h>
 
 #define PORT_SERVEUR 2000
 
@@ -43,7 +45,29 @@ void unloadLibrary_server() {
 
 int main(int argc, char *argv[]) {
     loadLibrary_server();
+
+    // Démarrage du serveur
     start_server(PORT_SERVEUR);
-    printf("Hello Server !\n");
+    printf("Serveur démarré sur le port %d\n", PORT_SERVEUR);
+
+    // Traitement des connexions (exemple : attente d'un message)
+    char message[128];
+    while (1) {
+        get_msg(message);
+        printf("Message reçu du serveur : %s\n", message);
+
+        // Exemple de condition pour arrêter le serveur
+        if (strcmp(message, "exit") == 0) {
+            break;
+        }
+    }
+
+    // Arrêt du serveur
+    stop_server();
+    printf("Serveur arrêté\n");
+
+    unloadLibrary_server();
+
+    return 0;
 }
 

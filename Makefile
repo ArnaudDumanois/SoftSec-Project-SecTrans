@@ -8,6 +8,7 @@ all: client server
 
 client: client.o
 	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/client.o -L$(DYNLIB_FOLDER) -lclient $(DYNLIB)
+
 server: server.o
 	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/server.o -L$(DYNLIB_FOLDER) -lserver $(DYNLIB)
 
