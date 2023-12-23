@@ -9,7 +9,8 @@ include_directories(.)
 add_executable(SoftSec_Project_SecTrans
         client.h
         server.h
-        main.c
         client.c
         server.c
+        auth.h
+        auth.c
 )

@@ -1,15 +1,14 @@
-//
-// Created by arnau on 20/12/2023.
-//
-
 #include "client.h"
+#include <dlfcn.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 static void (*snd_msg)(char msg[1024], int port);
 
 static void *libraryHandle;
 
 void loadLibrary_client() {
-    libraryHandle = dlopen("libserver.so", RTLD_LAZY);
+    libraryHandle = dlopen("../dynlib/libclient.so", RTLD_LAZY);
     if (!libraryHandle) {
         fprintf(stderr, "%s\n", dlerror());
         exit(EXIT_FAILURE);
@@ -26,7 +25,8 @@ void unloadLibrary_client() {
 }
 
 
-int sndmsg(char msg[1024], int port) {
-    snd_msg(msg, port);
+int main(int argc, char *argv[]) {
+    loadLibrary_client();
+    printf("Client is launched !\n");
     return 0;
 }
