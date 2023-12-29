@@ -5,6 +5,10 @@
 #include <string.h>
 #include "file_management/file_management.h"
 #include <unistd.h>
+#include "file_management/io/io_client.h"
+
+#define STILL 1
+#define END 0
 
 static void (*snd_msg)(char msg[INPUT_SIZE], int port);
 
@@ -40,15 +44,27 @@ int get_next_blocks(int fd, char file_content[INPUT_SIZE], int nb_bytes_to_read)
     return nb_bytes_read;
 }
 
+int get_next_blocks_file(char *current_pointer_to_file_content, char msg_to_send[], int nb_max_bytes_to_read) {
+    int i = 0;
+    while (i < nb_max_bytes_to_read) {
+        if (current_pointer_to_file_content == NULL) {
+            return END;
+        }
+        msg_to_send[i] = *current_pointer_to_file_content;
+        i++;
+        current_pointer_to_file_content++;
+    }
+    return current_pointer_to_file_content + 1 == NULL ? END : STILL;
+}
+
 void clear_array(char array[], int nb_elements_to_clear) {
     for (int i = 0; i < nb_elements_to_clear; i++) {
         array[i] = '\0';
     }
 }
 
-boolean get_current_msg_to_send(int fd, char msg_to_send[INPUT_SIZE], char filepath[], char action) {
-    char *filename = get_file_name_from_filepath(filepath);
-
+int
+get_current_msg_to_send(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action) {
     msg_to_send[0] = action;
     msg_to_send[1] = ';';
     strcat(&msg_to_send[2], filename);
@@ -57,14 +73,12 @@ boolean get_current_msg_to_send(int fd, char msg_to_send[INPUT_SIZE], char filep
 
     int nb_bytes_max_to_read = INPUT_SIZE - filename_length - 3; // for \0 at the end and the two ; in the middle
 
-    int nb_bytes_read = get_next_blocks(fd, &msg_to_send[2 + filename_length + 1], nb_bytes_max_to_read);
-    if (nb_bytes_read == nb_bytes_max_to_read) {
-        return FALSE; // is all file read ?
-    } else return TRUE; // end of file or error -> stop fetching next data
+    return get_next_blocks_file(ptr_current_file_content, &msg_to_send[2 + filename_length + 1], nb_bytes_max_to_read);
 }
 
-boolean sending_common(int fd, char msg_to_send[INPUT_SIZE], char filepath[], char action, int port) {
-    boolean result = get_current_msg_to_send(fd, msg_to_send, filepath, action);
+int
+sending_common(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action, int port) {
+    int result = get_current_msg_to_send(ptr_current_file_content, msg_to_send, filename, action);
     if (sndmsg(msg_to_send, port) != 0) {
         printf("Server can't receive your file - Port error");
         exit(EXIT_FAILURE);
@@ -72,28 +86,33 @@ boolean sending_common(int fd, char msg_to_send[INPUT_SIZE], char filepath[], ch
     return result;
 }
 
-boolean first_send(int fd, char msg_to_send[INPUT_SIZE], char filepath[], int port) {
-    return sending_common(fd, msg_to_send, filepath, 'S', port);
+int first_send(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], int port) {
+    return sending_common(ptr_current_file_content, msg_to_send, filename, 'S', port);
 }
 
-boolean mid_send(int fd, char msg_to_send[INPUT_SIZE], char filepath[], int port) {
-    return sending_common(fd, msg_to_send, filepath, 'A', port);
+int mid_send(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], int port) {
+    return sending_common(ptr_current_file_content, msg_to_send, filename, 'A', port);
 }
 
-boolean final_send(int fd, char msg_to_send[INPUT_SIZE], char filepath[], int port) {
-    return sending_common(fd, msg_to_send, filepath, 'E', port);
+int final_send(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], int port) {
+    return sending_common(ptr_current_file_content, msg_to_send, filename, 'E', port);
 }
 
 void send_file(char filepath[], int port) {
+
     int fd = open_file(filepath, 0); // 0 = read only
+    char *file_content = read_entire_file(fd);
+    close(fd);
+
     char msg_to_send[INPUT_SIZE] = {'\0'};
-    boolean result = first_send(fd, msg_to_send, filepath, port);
+    char *filename = get_file_name_from_filepath(filepath);
+    int result = first_send(file_content, msg_to_send, filename, port);
     clear_array(msg_to_send, INPUT_SIZE);
-    while (result == FALSE) {
-        result = mid_send(fd, msg_to_send, filepath, port);
+    printf("%s\n", file_content);
+    while (result == END) {
+        result = mid_send(file_content, msg_to_send, filename, port);
         clear_array(msg_to_send, INPUT_SIZE);
     }
-    close(fd);
     printf("Message sent !\n");
 }
 

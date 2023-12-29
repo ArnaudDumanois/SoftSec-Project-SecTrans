@@ -20,4 +20,6 @@ add_executable(SoftSec_Project_SecTrans
         constants.h
         file_management/file_management_server.h
         file_management/file_management_server.c
+        file_management/io/io_client.h
+        file_management/io/io_client.c
 )
