@@ -11,6 +11,13 @@ add_executable(SoftSec_Project_SecTrans
         server.h
         client.c
         server.c
-        auth.h
-        auth.c
+        auth/auth.h
+        auth/auth.c
+        file_management/file_management.c
+        file_management/file_management.h
+        time_management/time_management.h
+        time_management/time_management.c
+        constants.h
+        file_management/file_management_server.h
+        file_management/file_management_server.c
 )

@@ -2,13 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 
-bool is_between_12_and_20_chars(char *str);
+boolean is_between_12_and_20_chars(char *str);
 
-bool contains_at_least_one_special_char(char *str);
+boolean contains_at_least_one_special_char(char *str);
 
-bool contains_at_least_one_number(char *str);
+boolean contains_at_least_one_number(char *str);
 
-bool authenticate(char *username, char *password) {
+boolean authenticate(char *username, char *password) {
     char filename[] = "Users.txt";
     FILE *file = fopen(filename, "r");
     if (file != NULL) {
@@ -21,34 +21,34 @@ bool authenticate(char *username, char *password) {
                 auth_field = strtok(NULL, search); // password
                 if (is_between_12_and_20_chars(auth_field) && contains_at_least_one_number(auth_field)
                     && contains_at_least_one_special_char(auth_field)) {
-                    return true;
+                    return TRUE;
                 }
             }
-            return false;
+            return FALSE;
         }
         fclose(file);
     } else {
         perror("Your username/password have not the correct format"); //print the error message on stderr.
     }
-    return true;
+    return TRUE;
 }
 
-bool is_between_12_and_20_chars(char *str) {
+boolean is_between_12_and_20_chars(char *str) {
     int i;
     for (i = 1; str != NULL; str++, i++) {
-        if (i > 20) return false;
+        if (i > 20) return FALSE;
     }
-    if (i < 12) return false;
-    return true;
+    if (i < 12) return FALSE;
+    return TRUE;
 }
 
-bool contains_at_least_one_special_char(char *str) {
+boolean contains_at_least_one_special_char(char *str) {
     char special_chars[] = {'?', '!', '/', '^', '$', '@', '=', '+', '-'};
     for (char *c = str; c != NULL; c = str++) {
         for (int i = 0; special_chars[i] != '\0'; i++) {
-            if (*c == special_chars[i]) return true;
+            if (*c == special_chars[i]) return TRUE;
         }
     }
-    return false;
+    return FALSE;
 }
 

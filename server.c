@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <string.h>
-
-#define PORT_SERVEUR 2000
+#include "constants.h"
+#include "file_management/file_management_server.h"
 
 // lib du .so
 static void (*start_server)(int port);
@@ -43,27 +43,37 @@ void unloadLibrary_server() {
     dlclose(libraryHandle);
 }
 
+int startserver(int port) {
+    start_server(port);
+    return 0;
+}
+
+int stopserver() {
+    stop_server();
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
     loadLibrary_server();
 
     // Démarrage du serveur
-    start_server(PORT_SERVEUR);
-    printf("Serveur démarré sur le port %d\n", PORT_SERVEUR);
+    startserver(SERVER_PORT);
+    printf("Serveur démarré sur le port %d\n", SERVER_PORT);
 
     // Traitement des connexions (exemple : attente d'un message)
-    char message[128];
+    char message[INPUT_SIZE];
     while (1) {
         get_msg(message);
-        printf("Message reçu du serveur : %s\n", message);
+        printf("Message reçu du client : %s\n", message);
 
         // Exemple de condition pour arrêter le serveur
-        if (strcmp(message, "exit") == 0) {
+        if (strncmp(message, "exit", 4) == 0) {
             break;
         }
     }
 
     // Arrêt du serveur
-    stop_server();
+    stopserver();
     printf("Serveur arrêté\n");
 
     unloadLibrary_server();
