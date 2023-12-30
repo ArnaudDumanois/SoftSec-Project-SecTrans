@@ -45,6 +45,15 @@ int get_total_size(char *file_path) {
     }
 }
 
+boolean is_filepath_a_file(char *filepath) {
+    struct stat stats;
+    if (stat(filepath, &stats) != 0) {
+        return FALSE;
+    }
+    return S_ISREG(stats.st_mode) != 0 ? TRUE : FALSE;
+
+}
+
 int open_file(char filepath[INPUT_SIZE], short flag) {
     int fd = open(filepath, flag);
     if (fd == -1) {
@@ -67,7 +76,7 @@ boolean is_filepath_well_formed(char filepath[INPUT_SIZE]) {
     return false;
 }
 
-char* get_file_name_from_filepath(char filepath[INPUT_SIZE]){
+char *get_file_name_from_filepath(char filepath[INPUT_SIZE]) {
     char *p = strrchr(filepath, '/');
     return ++p;
 }

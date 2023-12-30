@@ -34,16 +34,6 @@ void unloadLibrary_client() {
     dlclose(libraryHandle);
 }
 
-int get_next_blocks(int fd, char file_content[INPUT_SIZE], int nb_bytes_to_read) {
-    int nb_bytes_read;
-    nb_bytes_read = read(fd, file_content, nb_bytes_to_read);
-    if (nb_bytes_read == -1) {
-        perror("Error! Could not read file\n");
-        exit(EXIT_FAILURE);
-    }
-    return nb_bytes_read;
-}
-
 int get_next_blocks_file(char *current_pointer_to_file_content, char msg_to_send[], int nb_max_bytes_to_read) {
     int i = 0;
     while (i < nb_max_bytes_to_read) {
@@ -76,13 +66,17 @@ get_current_msg_to_send(char *ptr_current_file_content, char msg_to_send[INPUT_S
     return get_next_blocks_file(ptr_current_file_content, &msg_to_send[2 + filename_length + 1], nb_bytes_max_to_read);
 }
 
-int
-sending_common(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action, int port) {
-    int result = get_current_msg_to_send(ptr_current_file_content, msg_to_send, filename, action);
+void sending(char msg_to_send[INPUT_SIZE], int port) {
     if (sndmsg(msg_to_send, port) != 0) {
         printf("Server can't receive your file - Port error");
         exit(EXIT_FAILURE);
     }
+}
+
+int
+sending_common(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action, int port) {
+    int result = get_current_msg_to_send(ptr_current_file_content, msg_to_send, filename, action);
+    sending(msg_to_send, port);
     return result;
 }
 
@@ -94,8 +88,11 @@ int mid_send(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char 
     return sending_common(ptr_current_file_content, msg_to_send, filename, 'A', port);
 }
 
-int final_send(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], int port) {
-    return sending_common(ptr_current_file_content, msg_to_send, filename, 'E', port);
+void final_send(char msg_to_send[INPUT_SIZE], char filename[], int port) {
+    strcpy(msg_to_send, "E;");
+    strcat(msg_to_send, filename); // TODO : absolument vérifier la taille du nom du fichier avant
+    strcat(msg_to_send, ";");
+    sending(msg_to_send, port);
 }
 
 void send_file(char filepath[], int port) {
@@ -108,11 +105,12 @@ void send_file(char filepath[], int port) {
     char *filename = get_file_name_from_filepath(filepath);
     int result = first_send(file_content, msg_to_send, filename, port);
     clear_array(msg_to_send, INPUT_SIZE);
-    printf("%s\n", file_content);
     while (result == END) {
         result = mid_send(file_content, msg_to_send, filename, port);
         clear_array(msg_to_send, INPUT_SIZE);
     }
+    final_send(msg_to_send, filename, port);
+    clear_array(msg_to_send, INPUT_SIZE);
     printf("Message sent !\n");
 }
 
@@ -124,7 +122,6 @@ int sndmsg(char msg[INPUT_SIZE], int port) {
 
 int main(int argc, char *argv[]) {
     if (argc == 2 || argc == 3) {
-        printf("%d\n", strncmp(argv[0], "./client", 8));
         if (strncmp(argv[0], "./client", 8) == 0) {
             loadLibrary_client();
             if (argc == 2) {
