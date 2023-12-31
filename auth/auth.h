@@ -1,6 +1,6 @@
 #ifndef SOFTSEC_PROJECT_SECTRANS_AUTH_H
 
-#include "bool_type.h"
+#include "utils/bool_type.h"
 
 #define SOFTSEC_PROJECT_SECTRANS_AUTH_H
 

@@ -2,7 +2,7 @@
 #define SOFTSEC_PROJECT_SECTRANS_FILE_MANAGEMENT_SERVER_H
 
 #include "../constants.h"
-#include "../bool_type.h"
+#include "../utils/bool_type.h"
 
 #define STORING_PATH "../files_to_store/"
 

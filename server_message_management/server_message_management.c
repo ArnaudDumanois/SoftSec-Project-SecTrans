@@ -3,9 +3,7 @@
 #include <string.h>
 #include "../file_management/file_management_server.h"
 #include "../actions.h"
-#include "../file_management/file_management.h"
-#include <unistd.h>
-#include <fcntl.h>
+#include "../utils/array_utils.h"
 
 void manage_file(char action, char filename[],
                  char file_content_to_write[]) { // TODO : checks when write returns 0 byte written, and send stop to client
@@ -20,12 +18,6 @@ void manage_file(char action, char filename[],
         //printf("nb bytes written : %d\n", nb_bytes_wrote);
     } else if (action == ACTION_END) {
         printf("The file has been created !\n");
-    }
-}
-
-void clear_array(char array[], int nb_elements_to_clear) {
-    for (int i = 0; i < nb_elements_to_clear; i++) {
-        array[i] = '\0';
     }
 }
 

@@ -5,6 +5,8 @@
 #include "constants.h"
 #include "file_management/file_management.h"
 #include "client_message_management/client_message_management.h"
+#include "load_libraries/load_libraries_server.h"
+#include "server_message_management/server_message_management.h"
 
 int main(int argc, char *argv[]) {
     if (argc == 2 || argc == 3) {
@@ -30,6 +32,10 @@ int main(int argc, char *argv[]) {
                     }
                 } else if (strncmp(argv[1], "-down", 5) == 0) {
                     // check that argv[2] is a path correctly formed, etc
+                    loadLibrary_server();
+                    call_start_server(CLIENT_PORT);
+
+                    call_stop_server();
                 }
             }
         }

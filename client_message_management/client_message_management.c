@@ -4,8 +4,8 @@
 #include <string.h>
 #include "../file_management/file_management.h"
 #include <unistd.h>
-#include "../file_management/io/io_client.h"
 #include "../load_libraries/load_libraries_client.h"
+#include "../utils/array_utils.h"
 
 #define STILL 1
 #define END 0
@@ -28,12 +28,6 @@ int get_next_blocks_file(char **current_pointer_to_file_content, char msg_to_sen
         (*current_pointer_to_file_content)++;
     }
     return *(*current_pointer_to_file_content) == '\0' ? END : STILL;
-}
-
-void clear_array(char array[], int nb_elements_to_clear) {
-    for (int i = 0; i < nb_elements_to_clear; i++) {
-        array[i] = '\0';
-    }
 }
 
 int

@@ -1,7 +1,7 @@
 #ifndef SOFTSEC_PROJECT_SECTRANS_FILE_MANAGEMENT_H
 #define SOFTSEC_PROJECT_SECTRANS_FILE_MANAGEMENT_H
 
-#include "../bool_type.h"
+#include "../utils/bool_type.h"
 #include "../constants.h"
 
 int get_size(char *file_path);
@@ -15,5 +15,7 @@ int open_file(char filepath[INPUT_SIZE], short flag);
 char *get_file_name_from_filepath(char filepath[INPUT_SIZE]);
 
 boolean is_filepath_a_file(char *filepath);
+
+int readall(int fd, char **dataptr, size_t *sizeptr);
 
 #endif //SOFTSEC_PROJECT_SECTRANS_FILE_MANAGEMENT_H
