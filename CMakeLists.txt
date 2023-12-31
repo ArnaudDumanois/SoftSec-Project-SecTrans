@@ -22,4 +22,12 @@ add_executable(SoftSec_Project_SecTrans
         file_management/file_management_server.c
         file_management/io/io_client.h
         file_management/io/io_client.c
+        load_libraries/load_libraries_server.c
+        load_libraries/load_libraries_server.h
+        load_libraries/load_libraries_client.c
+        load_libraries/load_libraries_client.h
+        client_message_management/client_message_management.c
+        client_message_management/client_message_management.h
+        server_message_management/server_message_management.c
+        server_message_management/server_message_management.h
 )
