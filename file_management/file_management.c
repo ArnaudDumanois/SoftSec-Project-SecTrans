@@ -57,7 +57,8 @@ boolean is_filepath_a_file(char *filepath) {
 int open_file(char filepath[INPUT_SIZE], short flag) {
     int fd = open(filepath, flag);
     if (fd == -1) {
-        printf("Error! Could not open file\n");
+        perror("Error");
+        //printf("Error! Could not open file\n");
         exit(EXIT_FAILURE);
     }
     return fd;

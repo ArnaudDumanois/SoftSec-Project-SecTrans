@@ -34,17 +34,18 @@ void unloadLibrary_client() {
     dlclose(libraryHandle);
 }
 
-int get_next_blocks_file(char *current_pointer_to_file_content, char msg_to_send[], int nb_max_bytes_to_read) {
+int get_next_blocks_file(char **current_pointer_to_file_content, char msg_to_send[], int nb_max_bytes_to_read) {
     int i = 0;
+    printf("%p\n", *current_pointer_to_file_content);
     while (i < nb_max_bytes_to_read) {
-        if (current_pointer_to_file_content == NULL) {
+        if (*(*current_pointer_to_file_content) == '\0') {
             return END;
         }
-        msg_to_send[i] = *current_pointer_to_file_content;
+        msg_to_send[i] = *(*current_pointer_to_file_content);
         i++;
-        current_pointer_to_file_content++;
+        (*current_pointer_to_file_content)++;
     }
-    return current_pointer_to_file_content + 1 == NULL ? END : STILL;
+    return *(*current_pointer_to_file_content) == '\0' ? END : STILL;
 }
 
 void clear_array(char array[], int nb_elements_to_clear) {
@@ -54,10 +55,10 @@ void clear_array(char array[], int nb_elements_to_clear) {
 }
 
 int
-get_current_msg_to_send(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action) {
+get_current_msg_to_send(char **ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action) {
     msg_to_send[0] = action;
     msg_to_send[1] = ';';
-    strcat(&msg_to_send[2], filename);
+    strcat(msg_to_send, filename);
     size_t filename_length = strlen(filename);
     msg_to_send[2 + filename_length] = ';'; // the filename begins at index 2
 
@@ -74,17 +75,18 @@ void sending(char msg_to_send[INPUT_SIZE], int port) {
 }
 
 int
-sending_common(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action, int port) {
+sending_common(char **ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action, int port) {
     int result = get_current_msg_to_send(ptr_current_file_content, msg_to_send, filename, action);
+    //printf("current msg_to_send : %s\n", msg_to_send);
     sending(msg_to_send, port);
     return result;
 }
 
-int first_send(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], int port) {
+int first_send(char **ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], int port) {
     return sending_common(ptr_current_file_content, msg_to_send, filename, 'S', port);
 }
 
-int mid_send(char *ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], int port) {
+int mid_send(char **ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], int port) {
     return sending_common(ptr_current_file_content, msg_to_send, filename, 'A', port);
 }
 
@@ -98,15 +100,16 @@ void final_send(char msg_to_send[INPUT_SIZE], char filename[], int port) {
 void send_file(char filepath[], int port) {
 
     int fd = open_file(filepath, 0); // 0 = read only
-    char *file_content = read_entire_file(fd);
+    char *file_content;
+    size_t siz_file_content;
+    readall(fd, &file_content, &siz_file_content);
     close(fd);
-
     char msg_to_send[INPUT_SIZE] = {'\0'};
     char *filename = get_file_name_from_filepath(filepath);
-    int result = first_send(file_content, msg_to_send, filename, port);
+    int result = first_send(&file_content, msg_to_send, filename, port);
     clear_array(msg_to_send, INPUT_SIZE);
-    while (result == END) {
-        result = mid_send(file_content, msg_to_send, filename, port);
+    while (result == STILL) {
+        result = mid_send(&file_content, msg_to_send, filename, port);
         clear_array(msg_to_send, INPUT_SIZE);
     }
     final_send(msg_to_send, filename, port);

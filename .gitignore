@@ -3,3 +3,4 @@ cmake-build-debug/*
 SecTrans
 .idea/
 target-build
+files_to_store

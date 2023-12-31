@@ -6,14 +6,16 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#define MAX_FILENAME_SIZE 512
+
 char *get_complete_filepath(char *filename) {
-    char *filepath = malloc(strlen(STORING_PATH) + strlen(filename));
+    char *filepath = malloc(strlen(STORING_PATH) + strlen(filename) + 1);
     strcpy(filepath, STORING_PATH);
     strcat(filepath, filename);
     return filepath;
 }
 
-struct stat *get_struct_stat_of_file(char filename[]) {
+struct stat *get_struct_stat_of_file(char *filename) {
     struct stat *stats = malloc(sizeof(struct stat));
     char *filepath = get_complete_filepath(filename);
     boolean is_stat_ok = FALSE;
@@ -24,34 +26,38 @@ struct stat *get_struct_stat_of_file(char filename[]) {
     return is_stat_ok ? stats : NULL;
 }
 
-boolean does_file_exist(char filename[]) {
+boolean does_file_exist(char *filename) {
     struct stat *stats = get_struct_stat_of_file(filename);
     boolean does_file_exist = FALSE;
     if (stats != NULL) {
         does_file_exist = TRUE;
+        free(stats);
     }
-    free(stats);
     return does_file_exist;
 }
 
-int create_file(char *filename) {
-    unsigned int filename_length = strnlen(filename, MAX_FILEPATH_SIZE + 1);
-    unsigned int storing_path_length = strlen(STORING_PATH);
-    if (filename_length == MAX_FILEPATH_SIZE + 1) {
-        printf("Filepath is too long\n");
-        return -1;
+void create_file(char *filename) {
+    size_t filename_length = strnlen(filename, MAX_FILENAME_SIZE + 1);
+    if (filename_length == MAX_FILENAME_SIZE + 1) {
+        printf("Filename is too long\n");
     }
-    char *filepath = (char *) malloc(sizeof(char) * (storing_path_length + filename_length + 1)); // + 1 for \0
-    strncpy(filepath, STORING_PATH, storing_path_length);
-    printf("ici on crée un fichier !\n");
-    int fd = open(strncat(filepath, filename, strnlen(filename, MAX_FILEPATH_SIZE)), O_CREAT | O_WRONLY);
+    char *filepath = get_complete_filepath(filename);
+    // LEAK MEMOIRE INDIQUE PAR CLION MAIS C'EST A CAUSE DU FLAG O_SYNC NON RECONNU SUR WINDOWS ET Y A RIEN TQT
+    int fd = open(filepath, O_CREAT | O_EXCL | O_SYNC | O_WRONLY, S_IWUSR);
     free(filepath);
-    return fd;
+    close(fd);
 }
 
-int write_file_content(int fd, char file_content[], size_t nb_char_to_write) {
+int write_file_content(char *filename, char file_content[], size_t nb_char_to_write) {
+    char *filepath = get_complete_filepath(filename);
+    int fd = open(filepath, O_SYNC | O_WRONLY | O_APPEND, S_IWUSR);
+    free(filepath);
+    if (fd == -1) {
+        return -1;
+    }
     int nb_bytes_wrote;
-    if ((nb_bytes_wrote = write(fd, file_content, nb_char_to_write + 1)) == -1) {
+    if ((nb_bytes_wrote = write(fd, file_content, nb_char_to_write)) == -1) {
+        perror("Erreur :");
         printf("Erreur lors de l'écriture dans un fichier\n");
         exit(EXIT_FAILURE);
     }
@@ -73,7 +79,7 @@ char *get_filename_from_message(char msg[INPUT_SIZE]) {
 }
 
 char *get_file_content_from_message(char msg[INPUT_SIZE]) {
-    char *ptr2 = strrchr(msg, ';');
+    char *ptr2 = strchr(&msg[3], ';'); // to get the second ;
     char *tok = strtok(ptr2 + 1, "\0");
     return tok;
 }

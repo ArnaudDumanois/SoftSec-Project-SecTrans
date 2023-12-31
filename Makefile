@@ -35,4 +35,4 @@ $(TARGET_FOLDER)/util.o: util.c util.h
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@
 
 clean:
-	rm -f $(TARGET_FOLDER)/*.o $(TARGET_FOLDER)/SecTrans $(TARGET_FOLDER)/client $(TARGET_FOLDER)/server
+	rm -f $(TARGET_FOLDER)/*.o $(TARGET_FOLDER)/SecTrans $(TARGET_FOLDER)/client $(TARGET_FOLDER)/server ./files_to_store/*
