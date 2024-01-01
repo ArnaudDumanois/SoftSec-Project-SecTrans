@@ -28,7 +28,7 @@ void unloadLibrary_client() { // TODO : needs to do a refactor to include the un
 
 int send_message(char msg[INPUT_SIZE], int port) {
     loadLibrary_client();
-    if (port != SERVER_PORT) return -1;
+    if (port != SERVER_PORT && port != CLIENT_PORT) return -1;
     snd_msg(msg, port);
     return 0;
 }
