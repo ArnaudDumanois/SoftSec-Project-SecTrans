@@ -1,26 +1,19 @@
-#include "../client.h"
+#include "../../client.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../file_management/file_management.h"
+#include "../../file_management/file_management.h"
 #include <unistd.h>
-#include "../load_libraries/load_libraries_client.h"
-#include "../utils/array_utils.h"
-#include "../actions.h"
+#include "../../utils/array_utils.h"
+#include "../../actions.h"
 #include "../server_message_management/server_message_management.h"
+#include "../common_message_management.h"
 
 #define STILL 1
 #define END 0
 
-int sndmsg(char msg[INPUT_SIZE], int port) {
-    if (port != SERVER_PORT) return -1;
-    call_send_msg(msg, port);
-    return 0;
-}
-
 int get_next_blocks_file(char **current_pointer_to_file_content, char msg_to_send[], int nb_max_bytes_to_read) {
     int i = 0;
-    printf("%p\n", *current_pointer_to_file_content);
     while (i < nb_max_bytes_to_read) {
         if (*(*current_pointer_to_file_content) == '\0') {
             return END;
@@ -30,18 +23,6 @@ int get_next_blocks_file(char **current_pointer_to_file_content, char msg_to_sen
         (*current_pointer_to_file_content)++;
     }
     return *(*current_pointer_to_file_content) == '\0' ? END : STILL;
-}
-
-void add_action(char msg_to_send[INPUT_SIZE], char action) {
-    msg_to_send[0] = action;
-    msg_to_send[1] = ';';
-}
-
-void add_filename(char msg_to_send[INPUT_SIZE], char filename[]) {
-    if(msg_to_send[1] == ';'){
-        strcat(msg_to_send, filename);
-        msg_to_send[2 + strlen(filename)] = ';';
-    }
 }
 
 int
@@ -58,7 +39,7 @@ get_current_msg_to_send(char **ptr_current_file_content, char msg_to_send[INPUT_
 void sending(char msg_to_send[INPUT_SIZE], int port) {
     printf("%s\n", msg_to_send);
     printf("%d\n", port);
-    if (sndmsg(msg_to_send, port) != 0) {
+    if (send_message(msg_to_send, port) != 0) {
         printf("Server can't receive your file - Port error");
         exit(EXIT_FAILURE);
     }

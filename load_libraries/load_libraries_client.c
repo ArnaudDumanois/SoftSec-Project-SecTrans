@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include "../constants.h"
 #include <stdlib.h>
+#include "../client.h"
 
 static void (*snd_msg)(char msg[INPUT_SIZE], int port);
 
 static void *libraryHandle;
 
 void loadLibrary_client() {
+    if (libraryHandle != NULL && snd_msg != NULL) return;
     libraryHandle = dlopen("../dynlib/libclient.so", RTLD_LAZY);
     if (!libraryHandle) {
         fprintf(stderr, "%s\n", dlerror());
@@ -20,10 +22,13 @@ void loadLibrary_client() {
     }
 }
 
-void unloadLibrary_client() {
+void unloadLibrary_client() { // TODO : needs to do a refactor to include the unloading of libraries
     dlclose(libraryHandle);
 }
 
-void call_send_msg(char msg[1024], int port) {
+int send_message(char msg[INPUT_SIZE], int port) {
+    loadLibrary_client();
+    if (port != SERVER_PORT) return -1;
     snd_msg(msg, port);
+    return 0;
 }

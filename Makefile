@@ -3,7 +3,13 @@ CFLAGS = -Wall -Werror -g
 DYNLIB = -ldl
 TARGET_FOLDER = ./target-build
 DYNLIB_FOLDER = dynlib
-COMMON_DEPENDENCIES = $(TARGET_FOLDER)/file_management.o $(TARGET_FOLDER)/util.o $(TARGET_FOLDER)/array_utils.o $(TARGET_FOLDER)/server_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/load_libraries_client.o $(TARGET_FOLDER)/load_libraries_server.o $(TARGET_FOLDER)/file_management_server.o
+
+COMMON_DEPENDENCIES_UTILS = $(TARGET_FOLDER)/util.o $(TARGET_FOLDER)/array_utils.o
+COMMON_DEPENDENCIES_LOAD_LIBRARIES = $(TARGET_FOLDER)/load_libraries_client.o $(TARGET_FOLDER)/load_libraries_server.o
+COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT = $(TARGET_FOLDER)/server_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/common_message_management.o
+COMMON_DEPENDENCIES_FILE_MANAGEMENT = $(TARGET_FOLDER)/file_management.o $(TARGET_FOLDER)/file_management_server.o
+
+COMMON_DEPENDENCIES = $(COMMON_DEPENDENCIES_UTILS) $(COMMON_DEPENDENCIES_LOAD_LIBRARIES) $(COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT) $(COMMON_DEPENDENCIES_FILE_MANAGEMENT)
 
 all: client server
 
@@ -31,16 +37,19 @@ $(TARGET_FOLDER)/util.o: utils/util.c utils/util.h
 $(TARGET_FOLDER)/array_utils.o: utils/array_utils.c utils/array_utils.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET_FOLDER)/load_libraries_server.o: ./load_libraries/load_libraries_server.c ./load_libraries/load_libraries_server.h
+$(TARGET_FOLDER)/load_libraries_server.o: ./load_libraries/load_libraries_server.c server.h
 	$(CC) $(CFLAGS) -c $< -o $@ $(DYNLIB)
 
-$(TARGET_FOLDER)/load_libraries_client.o: ./load_libraries/load_libraries_client.c ./load_libraries/load_libraries_client.h
+$(TARGET_FOLDER)/load_libraries_client.o: ./load_libraries/load_libraries_client.c client.h
 	$(CC) $(CFLAGS) -c $< -o $@ $(DYNLIB)
 
-$(TARGET_FOLDER)/client_message_management.o: client_message_management/client_message_management.c client_message_management/client_message_management.h client.h server.h
+$(TARGET_FOLDER)/client_message_management.o: message_management/client_message_management/client_message_management.c message_management/client_message_management/client_message_management.h $(TARGET_FOLDER)/common_message_management.o client.h server.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET_FOLDER)/server_message_management.o: server_message_management/server_message_management.c server_message_management/server_message_management.h client.h server.h
+$(TARGET_FOLDER)/server_message_management.o: message_management/server_message_management/server_message_management.c message_management/server_message_management/server_message_management.h $(TARGET_FOLDER)/common_message_management.o client.h server.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TARGET_FOLDER)/common_message_management.o: message_management/common_message_management.c message_management/common_message_management.h constants.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.c %.h

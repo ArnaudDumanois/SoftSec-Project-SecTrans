@@ -1,15 +1,15 @@
 #ifndef SOFTSEC_PROJECT_SECTRANS_SERVER_MESSAGE_MANAGEMENT_H
 #define SOFTSEC_PROJECT_SECTRANS_SERVER_MESSAGE_MANAGEMENT_H
 
-#include "../constants.h"
+#include "../../constants.h"
 
 void manage_request(char message[INPUT_SIZE]);
 
-int startserver(int port);
+int start_server(int port);
 
-int stopserver();
+int stop_server();
 
-int getmsg(char msg_read[INPUT_SIZE]);
+int get_message(char msg_read[INPUT_SIZE]);
 
 void listen_message(char message[INPUT_SIZE]);
 

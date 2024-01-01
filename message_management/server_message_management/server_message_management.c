@@ -1,34 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../file_management/file_management.h"
-#include "../file_management/file_management_server.h"
-#include "../actions.h"
-#include "../utils/array_utils.h"
+#include "../../file_management/file_management.h"
+#include "../../file_management/file_management_server.h"
+#include "../../actions.h"
+#include "../../utils/array_utils.h"
 #include "../client_message_management/client_message_management.h"
-#include "../server.h"
-#include "../load_libraries/load_libraries_server.h"
+#include "../../server.h"
 #include <dirent.h>
-
-int startserver(int port) {
-    call_start_server(port);
-    return 0;
-}
-
-int stopserver() {
-    call_stop_server();
-    return 0;
-}
-
-int getmsg(char msg_read[1024]) {
-    call_get_msg_server(msg_read);
-    return 0;
-}
-
-void add_filename(char msg_to_send[INPUT_SIZE], char filename[]) { // TODO : checks to do to not exceed array's size
-    strcat(msg_to_send, filename);
-    strcat(msg_to_send, ";");
-}
+#include "../common_message_management.h"
 
 void list_files(char msg_to_send[INPUT_SIZE]) { // TODO : to finish
     DIR *d;
@@ -80,8 +60,8 @@ void manage_request(char message[INPUT_SIZE]) {
 
 void listen_message(char message[INPUT_SIZE]) {
     while (1) {
-        getmsg(message);
-        //printf("Message reçu du client : %s\n", message);
+        get_message(message);
+        printf("Message reçu du client : %s\n", message);
         manage_request(message);
 
         // Exemple de condition pour arrêter le serveur
