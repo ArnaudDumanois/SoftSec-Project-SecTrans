@@ -1,24 +1,8 @@
-#include "server.h"
 #include <stdio.h>
 #include <string.h>
 #include "constants.h"
 #include "load_libraries/load_libraries_server.h"
 #include "server_message_management/server_message_management.h"
-
-int startserver(int port) {
-    call_start_server(port);
-    return 0;
-}
-
-int stopserver() {
-    call_stop_server();
-    return 0;
-}
-
-int getmsg(char msg_read[1024]) {
-    call_get_msg_server(msg_read);
-    return 0;
-}
 
 int main() {
     loadLibrary_server();

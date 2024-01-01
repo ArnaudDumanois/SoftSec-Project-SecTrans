@@ -37,10 +37,10 @@ $(TARGET_FOLDER)/load_libraries_server.o: ./load_libraries/load_libraries_server
 $(TARGET_FOLDER)/load_libraries_client.o: ./load_libraries/load_libraries_client.c ./load_libraries/load_libraries_client.h
 	$(CC) $(CFLAGS) -c $< -o $@ $(DYNLIB)
 
-$(TARGET_FOLDER)/client_message_management.o: client_message_management/client_message_management.c client_message_management/client_message_management.h
+$(TARGET_FOLDER)/client_message_management.o: client_message_management/client_message_management.c client_message_management/client_message_management.h client.h server.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET_FOLDER)/server_message_management.o: server_message_management/server_message_management.c server_message_management/server_message_management.h
+$(TARGET_FOLDER)/server_message_management.o: server_message_management/server_message_management.c server_message_management/server_message_management.h client.h server.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.c %.h

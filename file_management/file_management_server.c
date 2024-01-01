@@ -8,16 +8,23 @@
 
 #define MAX_FILENAME_SIZE 512
 
-char *get_complete_filepath(char *filename) {
+char *get_complete_filepath_storing(char *filename) {
     char *filepath = malloc(strlen(STORING_PATH) + strlen(filename) + 1);
     strcpy(filepath, STORING_PATH);
     strcat(filepath, filename);
     return filepath;
 }
 
+char *get_complete_filepath_getting(char *filename) {
+    char *filepath = malloc(strlen(GETTING_PATH) + strlen(filename) + 1);
+    strcpy(filepath, GETTING_PATH);
+    strcat(filepath, filename);
+    return filepath;
+}
+
 struct stat *get_struct_stat_of_file(char *filename) {
     struct stat *stats = malloc(sizeof(struct stat));
-    char *filepath = get_complete_filepath(filename);
+    char *filepath = get_complete_filepath_storing(filename);
     boolean is_stat_ok = FALSE;
     if (stat(filepath, stats) == 0) {
         is_stat_ok = TRUE;
@@ -41,7 +48,7 @@ void create_file(char *filename) {
     if (filename_length == MAX_FILENAME_SIZE + 1) {
         printf("Filename is too long\n");
     }
-    char *filepath = get_complete_filepath(filename);
+    char *filepath = get_complete_filepath_storing(filename);
     // LEAK MEMOIRE INDIQUE PAR CLION MAIS C'EST A CAUSE DU FLAG O_SYNC NON RECONNU SUR WINDOWS ET Y A RIEN TQT
     int fd = open(filepath, O_CREAT | O_EXCL | O_SYNC | O_WRONLY, S_IWUSR);
     free(filepath);
@@ -49,7 +56,7 @@ void create_file(char *filename) {
 }
 
 int write_file_content(char *filename, char file_content[], size_t nb_char_to_write) {
-    char *filepath = get_complete_filepath(filename);
+    char *filepath = get_complete_filepath_storing(filename);
     int fd = open(filepath, O_SYNC | O_WRONLY | O_APPEND, S_IWUSR);
     free(filepath);
     if (fd == -1) {

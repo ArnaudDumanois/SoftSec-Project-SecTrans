@@ -92,7 +92,7 @@ boolean is_filepath_well_formed(char filepath[INPUT_SIZE]) {
     return false;
 }
 
-char *get_file_name_from_filepath(char filepath[INPUT_SIZE]) {
+char *get_file_name_from_filepath(char filepath[]) {
     char *p = strrchr(filepath, '/');
     return ++p;
 }

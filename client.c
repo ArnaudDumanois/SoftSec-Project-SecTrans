@@ -32,10 +32,17 @@ int main(int argc, char *argv[]) {
                     }
                 } else if (strncmp(argv[1], "-down", 5) == 0) {
                     // check that argv[2] is a path correctly formed, etc
-                    loadLibrary_server();
-                    call_start_server(CLIENT_PORT);
-
-                    call_stop_server();
+                    unsigned int size = strlen(argv[2]);
+                    if (size < MAX_FILEPATH_SIZE) {
+                            loadLibrary_server();
+                            call_start_server(CLIENT_PORT);
+                            // Check that argv[2] is the name of a file and not a filepath
+                            download_file(argv[2], SERVER_PORT);
+                            call_stop_server();
+                    } else {
+                        printf("The path to your file is of size : %u. It should be of a maximum size of : %d", size,
+                               INPUT_SIZE - 1);
+                    }
                 }
             }
         }

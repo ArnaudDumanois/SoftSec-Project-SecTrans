@@ -3,6 +3,7 @@
 
 #define ACTION_CREATE 'S'
 #define ACTION_ADD 'A'
+#define ACTION_DOWNLOAD 'D'
 #define ACTION_REMOVE 'R'
 #define ACTION_END 'E'
 #define ACTION_LIST 'L'
