@@ -48,7 +48,6 @@ void sending(char msg_to_send[INPUT_SIZE], int port) {
 int
 sending_common(char **ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action, int port) {
     int result = get_current_msg_to_send(ptr_current_file_content, msg_to_send, filename, action);
-    //printf("current msg_to_send : %s\n", msg_to_send);
     sending(msg_to_send, port);
     return result;
 }
@@ -64,7 +63,6 @@ int mid_send(char **ptr_current_file_content, char msg_to_send[INPUT_SIZE], char
 void final_send(char msg_to_send[INPUT_SIZE], char filename[], int port) {
     add_action(msg_to_send, ACTION_END);
     add_filename(msg_to_send, filename); // TODO : absolument vérifier la taille du nom du fichier avant
-    strcat(msg_to_send, ";");
     sending(msg_to_send, port);
 }
 
@@ -76,18 +74,20 @@ void send_file(char filepath[], int port) {
         printf("An error has happened when reading the file you want to send\n");
         exit(EXIT_FAILURE);
     }
+    char *beginning_file_content = file_content;
     close(fd);
     char msg_to_send[INPUT_SIZE] = {'\0'};
     char *filename = get_file_name_from_filepath(filepath);
     int result = first_send(&file_content, msg_to_send, filename, port);
     clear_array(msg_to_send, INPUT_SIZE);
+
     while (result == STILL) {
         result = mid_send(&file_content, msg_to_send, filename, port);
         clear_array(msg_to_send, INPUT_SIZE);
     }
     final_send(msg_to_send, filename, port);
     clear_array(msg_to_send, INPUT_SIZE);
-    free(file_content);
+    free(beginning_file_content);
     printf("Message sent !\n");
 }
 

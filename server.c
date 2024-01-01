@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "constants.h"
+#include "server.h"
 #include "message_management/server_message_management/server_message_management.h"
 
 int main() {

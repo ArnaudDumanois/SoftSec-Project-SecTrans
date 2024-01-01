@@ -2,8 +2,8 @@
 #include <string.h>
 #include "constants.h"
 #include "file_management/file_management.h"
+#include "server.h"
 #include "message_management/client_message_management/client_message_management.h"
-#include "message_management/server_message_management/server_message_management.h"
 
 int main(int argc, char *argv[]) {
     if (argc == 2 || argc == 3) {
