@@ -8,18 +8,19 @@
 
 #define MAX_FILENAME_SIZE 512
 
-char *get_complete_filepath_storing(char *filename) {
-    char *filepath = malloc(strlen(STORING_PATH) + strlen(filename) + 1);
-    strcpy(filepath, STORING_PATH);
+char *get_complete_filepath(char *filename, char *path_to_use) {
+    char *filepath = malloc(strlen(path_to_use) + strlen(filename) + 1);
+    strcpy(filepath, path_to_use);
     strcat(filepath, filename);
     return filepath;
 }
 
+char *get_complete_filepath_storing(char *filename) {
+    return get_complete_filepath(filename, STORING_PATH);
+}
+
 char *get_complete_filepath_getting(char *filename) {
-    char *filepath = malloc(strlen(GETTING_PATH) + strlen(filename) + 1);
-    strcpy(filepath, GETTING_PATH);
-    strcat(filepath, filename);
-    return filepath;
+    return get_complete_filepath(filename, GETTING_PATH);
 }
 
 struct stat *get_struct_stat_of_file(char *filename) {

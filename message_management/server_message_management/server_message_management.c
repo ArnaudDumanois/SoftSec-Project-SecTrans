@@ -49,7 +49,7 @@ void manage_request(char message[INPUT_SIZE]) {
         clear_array(message, INPUT_SIZE);
     } else if (action == ACTION_DOWNLOAD) {
         char *filename = get_filename_from_message(message);
-        char *filepath = get_complete_filepath_getting(filename);
+        char *filepath = get_complete_filepath_storing(filename);
         printf("%s\n", filepath);
         send_file(filepath, CLIENT_PORT);
         free(filename);
