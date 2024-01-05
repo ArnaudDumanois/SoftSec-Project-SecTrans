@@ -11,6 +11,8 @@
 
 #define STILL 1
 #define END 0
+#define DEFAULT_SERVER_PORT 2000
+
 
 int get_next_blocks_file(char **current_pointer_to_file_content, char msg_to_send[], int nb_max_bytes_to_read) {
     int i = 0;
@@ -25,8 +27,7 @@ int get_next_blocks_file(char **current_pointer_to_file_content, char msg_to_sen
     return *(*current_pointer_to_file_content) == '\0' ? END : STILL;
 }
 
-int
-get_current_msg_to_send(char **ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action) {
+int get_current_msg_to_send(char **ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char *action) {
     add_action(msg_to_send, action);
     add_filename(msg_to_send, filename);
 
@@ -37,16 +38,15 @@ get_current_msg_to_send(char **ptr_current_file_content, char msg_to_send[INPUT_
 }
 
 void sending(char msg_to_send[INPUT_SIZE], int port) {
-    printf("%s\n", msg_to_send);
-    printf("%d\n", port);
+    printf("Message : %s\n", msg_to_send);
+    printf("Port : %d\n", port);
     if (send_message(msg_to_send, port) != 0) {
         printf("Server can't receive your file - Port error");
         exit(EXIT_FAILURE);
     }
 }
 
-int
-sending_common(char **ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char action, int port) {
+int sending_common(char **ptr_current_file_content, char msg_to_send[INPUT_SIZE], char filename[], char *action, int port) {
     int result = get_current_msg_to_send(ptr_current_file_content, msg_to_send, filename, action);
     sending(msg_to_send, port);
     clear_array(msg_to_send, INPUT_SIZE);
@@ -100,3 +100,25 @@ void download_file(char filename[], int port) {
     ask_for_file_to_server(msg_to_send, port, filename);
     listen_message(msg_to_send);
 }
+
+void add_login(char *msg_to_send,char *username, char *passwd) {
+    strcat(msg_to_send,username);
+    strcat(msg_to_send,";");
+    strcat(msg_to_send,passwd);
+}
+
+int login(char *username, char *passwd, int port){
+    char *msg_to_send = malloc(INPUT_SIZE);
+    if (msg_to_send == NULL) {
+        fprintf(stderr, "Erreur d'allocation de mémoire.\n");
+        exit(EXIT_FAILURE);
+    }
+    add_action(msg_to_send,ACTION_LOGIN);
+    add_login(msg_to_send,username,passwd);
+    sending(msg_to_send,port);
+    //char response[INPUT_SIZE];
+    //listen_message(response);
+    return 0;
+}
+
+

@@ -3,7 +3,7 @@
 
 #include "../constants.h"
 
-void add_action(char msg_to_send[INPUT_SIZE], char action);
+void add_action(char msg_to_send[INPUT_SIZE], char *action);
 void add_filename(char msg_to_send[INPUT_SIZE], char filename[]);
 
 #endif //SOFTSEC_PROJECT_SECTRANS_COMMON_MESSAGE_MANAGEMENT_H

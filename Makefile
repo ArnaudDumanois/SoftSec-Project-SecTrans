@@ -11,17 +11,30 @@ COMMON_DEPENDENCIES_FILE_MANAGEMENT = $(TARGET_FOLDER)/file_management.o $(TARGE
 
 COMMON_DEPENDENCIES = $(COMMON_DEPENDENCIES_UTILS) $(COMMON_DEPENDENCIES_LOAD_LIBRARIES) $(COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT) $(COMMON_DEPENDENCIES_FILE_MANAGEMENT)
 
+CLIENT_DEPENDENCIES = $(TARGET_FOLDER)/messages.o $(TARGET_FOLDER)/logger_sha.o
+SERVER_DEPENDENCIES = $(TARGET_FOLDER)/logger_sha.o
+EXTERNAL_LIBS = /usr/lib
+
 all: client server
 
-client: client.o $(COMMON_DEPENDENCIES)
-	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/client.o $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lclient $(DYNLIB)
+client: client.o $(CLIENT_DEPENDENCIES) $(COMMON_DEPENDENCIES)
+	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/client.o $(CLIENT_DEPENDENCIES) $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lclient -L$(EXTERNAL_LIBS) -lcrypto $(DYNLIB)
 
 server: server.o $(COMMON_DEPENDENCIES)
-	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/server.o  $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lserver $(DYNLIB)
+	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/server.o $(SERVER_DEPENDENCIES) $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lserver -L$(EXTERNAL_LIBS) -lcrypto $(DYNLIB)
 
-client.o: client.c client.h $(COMMON_DEPENDENCIES)
+##PARTIE CLIENT
+
+client.o: client.c client.h $(CLIENT_DEPENDENCIES) $(COMMON_DEPENDENCIES)
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@ $(DYNLIB)
 
+$(TARGET_FOLDER)/messages.o: ./libs/client_libs/messages.c ./libs/client_libs/messages.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TARGET_FOLDER)/logger_sha.o: ./libs/logger/logger_sha.c ./libs/logger/logger_sha.h
+	 $(CC) $(CFLAGS) -c $< -o $@ -L$(EXTERNAL_LIBS) -lcrypto
+
+##PARTIE SERVEUR
 server.o: server.c server.h $(COMMON_DEPENDENCIES)
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@ $(DYNLIB)
 
@@ -46,7 +59,7 @@ $(TARGET_FOLDER)/load_libraries_client.o: ./load_libraries/load_libraries_client
 $(TARGET_FOLDER)/client_message_management.o: message_management/client_message_management/client_message_management.c message_management/client_message_management/client_message_management.h $(TARGET_FOLDER)/common_message_management.o client.h server.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET_FOLDER)/server_message_management.o: message_management/server_message_management/server_message_management.c message_management/server_message_management/server_message_management.h $(TARGET_FOLDER)/common_message_management.o client.h server.h
+$(TARGET_FOLDER)/server_message_management.o: message_management/server_message_management/server_message_management.c message_management/server_message_management/server_message_management.h $(TARGET_FOLDER)/common_message_management.o $(TARGET_FOLDER)/logger_sha.o client.h server.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET_FOLDER)/common_message_management.o: message_management/common_message_management.c message_management/common_message_management.h constants.h
@@ -56,4 +69,4 @@ $(TARGET_FOLDER)/common_message_management.o: message_management/common_message_
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@
 
 clean:
-	rm -f $(TARGET_FOLDER)/*.o $(TARGET_FOLDER)/SecTrans $(TARGET_FOLDER)/client $(TARGET_FOLDER)/server ./files_to_store/*
+	rm -f $(TARGET_FOLDER)/* $(TARGET_FOLDER)/SecTrans $(TARGET_FOLDER)/client $(TARGET_FOLDER)/server ./files_to_store/*
