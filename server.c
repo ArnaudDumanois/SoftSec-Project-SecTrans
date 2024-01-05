@@ -9,9 +9,11 @@ int main() {
     start_server(SERVER_PORT);
     printf("Serveur démarré sur le port %d\n", SERVER_PORT);
 
+    while(1){
+        char message[INPUT_SIZE];
+        listen_message(message);
+    }
     // Traitement des connexions (exemple : attente d'un message)
-    char message[INPUT_SIZE];
-    listen_message(message);
 
     // Arrêt du serveur
     stop_server();

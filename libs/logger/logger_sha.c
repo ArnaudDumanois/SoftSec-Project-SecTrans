@@ -33,45 +33,48 @@ void hash_password(const char *password, const char *salt, char *hashed_password
 }
 
 int save_user(const char *usrname, const char *passwd) {
-    FILE *file = fopen(USERS_DB_FILE, "ab");
-    if (!file) {
+    int file_descriptor = open(USERS_DB_FILE, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
+
+    if (file_descriptor == -1) {
         fprintf(stderr, "Erreur lors de l'ouverture du fichier des utilisateurs.\n");
         exit(EXIT_FAILURE);
     }
 
-    if(user_exists(usrname,passwd)!=-1){
+    if (user_exists(usrname, passwd) != -1) {
         printf("USER EXISTE !");
+        close(file_descriptor);
         return -1;
     }
 
-    User *new_user = (User *)malloc(sizeof(User));
-    strcpy(new_user->username,usrname);
-    generate_salt(new_user->salt);
-    hash_password(passwd, new_user->salt, new_user->hashed_password);
+    User new_user;
+    strcpy(new_user.username, usrname);
+    generate_salt(new_user.salt);
+    hash_password(passwd, new_user.salt, new_user.hashed_password);
 
-    if (fwrite(new_user, sizeof(User), 1, file) != 1) {
+    if (write(file_descriptor, &new_user, sizeof(User)) != sizeof(User)) {
         fprintf(stderr, "Erreur lors de l'écriture de l'utilisateur dans le fichier.\n");
-        fclose(file);
+        close(file_descriptor);
         return -1;
     }
 
-    fclose(file);
+    close(file_descriptor);
     return 1;
 }
 
 int authenticate_user(const char *username, const char *password) {
-    FILE *file = fopen(USERS_DB_FILE, "ab");
+    //printf("Auth user FUNC !");
+    int file_descriptor = open(USERS_DB_FILE, O_RDONLY);
 
-    if (!file) {
+    if (file_descriptor == -1) {
         perror("Erreur lors de l'ouverture du fichier des utilisateurs");
         exit(EXIT_FAILURE);
     }
 
     User user;
-    size_t read_result;
+    ssize_t read_result;
     int authentication_result = 0;  // Par défaut, l'authentification échoue
 
-    while ((read_result = fread(&user, sizeof(User), 1, file)) == 1) {
+    while ((read_result = read(file_descriptor, &user, sizeof(User))) == sizeof(User)) {
         if (strcmp(user.username, username) == 0) {
             char hashed_password[MAX_PASSWORD_LENGTH];
             hash_password(password, user.salt, hashed_password);
@@ -79,16 +82,17 @@ int authenticate_user(const char *username, const char *password) {
             if (strcmp(hashed_password, user.hashed_password) == 0) {
                 authentication_result = 1; // Authentification réussie
             }
+
             break; // Utilisateur trouvé, que le mot de passe soit correct ou non
         }
     }
 
-    if (read_result == 0 && !feof(file)) {
+    if (read_result == -1) {
         perror("Erreur lors de la lecture du fichier des utilisateurs");
         exit(EXIT_FAILURE);
     }
 
-    fclose(file);
+    close(file_descriptor);
     return authentication_result;
 }
 
