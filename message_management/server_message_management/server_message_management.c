@@ -3,7 +3,6 @@
 #include <string.h>
 #include "../../file_management/file_management.h"
 #include "../../file_management/file_management_server.h"
-#include "../../actions.h"
 #include "../../utils/array_utils.h"
 #include "../client_message_management/client_message_management.h"
 #include "../../server.h"
@@ -41,25 +40,13 @@ void manage_file(const char *action, char filename[],
     }
 }
 
-char *get_passwd(char *message) {
-    char *cut = strtok(message, ";");
-    return &cut[2];
+
+void sendingResponse(char *action,int res){
+    printf("SERVER RESPONSE\n");
+    client_sendResponse(action,res,CLIENT_PORT);
 }
 
-char *get_username(const char *message) {
-    char *b = strchr(message, ';');
-    char *e = strchr(b, ';');
-    char *username = malloc(e - b + 1);
-    int j = 0;
-    for (char *c = b; c != e; c++) {
-        username[j] = *c;
-        j++;
-    }
-    username[j] = '\0';
-    return username;
-}
-
-void manage_request(char message[INPUT_SIZE]) {
+int manage_request(char message[INPUT_SIZE]) {
     printf("MANAGE REQUEST\n");
     char *action = malloc(total_size_between_semicolons(message,0));
     extract_between_semicolons_at_index(message,0,action, sizeof(action));
@@ -100,7 +87,6 @@ void manage_request(char message[INPUT_SIZE]) {
     }
     else if (strcmp(action,ACTION_REGISTER)==0){
         printf("REGISTER ACTION !\n");
-        //vérifier si user existe
         char *usrname = malloc(total_size_between_semicolons(message,1));
         extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
 
@@ -108,15 +94,22 @@ void manage_request(char message[INPUT_SIZE]) {
         extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
 
         int res = save_user(usrname,passwd);
-        if (res == 1) { printf("User registered !"); }
-        else { printf("Error during user registered !"); }
+        if (res == 1) { printf("User registered !\n"); }
+        else { printf("Error during user registered !\n"); }
 
-        //sendResponse(action,res);
+        sendingResponse(action,res);
     }
+    else if (strcmp(action,ACTION_REPONSE)==0) {
+        printf("REPONSE RECEIVED !");
+        char *res = malloc(total_size_between_semicolons(message, 2));
+        extract_between_semicolons_at_index(message, 2, res, sizeof(res));
+        return (int) strtol(res, NULL, 10);
+    }
+    return -10;
 }
 
-void listen_message(char message[INPUT_SIZE]) {
+int listen_message(char message[INPUT_SIZE]) {
         get_message(message);
         printf("Message reçu : %s\n", message);
-        manage_request(message);
+        return manage_request(message);
 }

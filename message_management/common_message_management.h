@@ -13,4 +13,6 @@ void add_string(char msg_to_send[INPUT_SIZE], char *string);
 
 void add_string_without_dot(char msg_to_send[INPUT_SIZE], char *string);
 
+void insert_between_semicolons(char *input, const char new_action);
+int is_valid_action(const char action);
 #endif //SOFTSEC_PROJECT_SECTRANS_COMMON_MESSAGE_MANAGEMENT_H
