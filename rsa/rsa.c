@@ -6,10 +6,10 @@
 #include <stdlib.h>
 
 #define KEY_LENGTH  1024
-#define PUB_EXP     3 // attention c'est ptet pas ouf ça
+#define PUB_EXP     65537
 
 void generate_keys(char **private_key, char **public_key) {
-    // Générer une nouvelle paire de clés RSA de 2048 bits
+    // Générer une nouvelle paire de clés RSA de 1024 bits
     RSA *keypair = RSA_new();
     BIGNUM *e = BN_new();
     BN_set_word(e, PUB_EXP);
@@ -34,8 +34,8 @@ void generate_keys(char **private_key, char **public_key) {
     size_t pub_len = BIO_pending(pub_bio);
 
     // Allouer de la mémoire pour les clés
-    *private_key = (char *)malloc(pri_len + 1);
-    *public_key = (char *)malloc(pub_len + 1);
+    *private_key = (char *) malloc(pri_len + 1);
+    *public_key = (char *) malloc(pub_len + 1);
 
     // Lire les clés depuis les objets BIO
     BIO_read(pri_bio, *private_key, pri_len);
