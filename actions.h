@@ -7,6 +7,8 @@
 #define ACTION_REMOVE 'R'
 #define ACTION_END 'E'
 #define ACTION_LIST 'L'
+#define ACTION_LOGIN 'O'
+#define ACTION_REGISTER 'G'
 #define ACTION_PUB_KEY_SEND 'P'
 #define ACTION_AES_SEND 'X'
 

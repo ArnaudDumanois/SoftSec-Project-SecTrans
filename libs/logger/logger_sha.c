@@ -9,6 +9,8 @@
 #include <string.h>
 #include <openssl/sha.h>
 #include <openssl/rand.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #define MAX_USERNAME_LENGTH 50
 #define MAX_PASSWORD_LENGTH 64
@@ -47,12 +49,20 @@ void save_user(const User *user) {
 }
 
 int authenticate_user(const char *username, const char *password) {
-    FILE *file = fopen(USERS_DB_FILE, "rb");
-    if (!file) {
-        fprintf(stderr, "Erreur lors de l'ouverture du fichier des utilisateurs.\n");
+    printf("AUTH USER\n");
+    int fd = open(USERS_DB_FILE, O_RDONLY | O_CREAT | O_EXCL, S_IRUSR);
+    if(fd==-1) {
+        perror("Erreur");
         exit(EXIT_FAILURE);
     }
+   /* FILE *file = fopen(USERS_DB_FILE, "rb");
+    if (!file) {
+        printf("Authenticate User\n");
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier des utilisateurs.\n");
+        exit(EXIT_FAILURE);
+    }*/
 
+   /*
     User user;
     while (fread(&user, sizeof(User), 1, file) == 1) {
         if (strcmp(user.username, username) == 0) {
@@ -65,9 +75,9 @@ int authenticate_user(const char *username, const char *password) {
                 break; // Utilisateur trouvé, mais mot de passe incorrect
             }
         }
-    }
+    }*/
 
-    fclose(file);
+    close(fd);
     return 0; // Aucun utilisateur trouvé
 }
 

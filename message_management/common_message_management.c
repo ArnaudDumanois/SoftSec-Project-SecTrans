@@ -1,9 +1,10 @@
 #include "common_message_management.h"
 #include <string.h>
 
-void add_action(char msg_to_send[INPUT_SIZE], char action) {
-    msg_to_send[0] = action;
-    msg_to_send[1] = ';';
+void add_action(char msg_to_send[INPUT_SIZE], char *action) {
+    size_t lenAction = strlen(action);
+    for(int i=0;i<lenAction;i++){msg_to_send[i]=action[i];}
+    msg_to_send[lenAction]=';';
 }
 
 void add_filename(char msg_to_send[INPUT_SIZE], char filename[]) { // TODO : checks to do to not exceed array's size

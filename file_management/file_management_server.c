@@ -9,9 +9,11 @@
 #define MAX_FILENAME_SIZE 512
 
 char *get_complete_filepath(char *filename, char *path_to_use) {
+    printf("START COMPLETE_FILE_PATH\n");
     char *filepath = malloc(strlen(path_to_use) + strlen(filename) + 1);
     strcpy(filepath, path_to_use);
     strcat(filepath, filename);
+    printf("END COMPLETE_FILE_PATH\n");
     return filepath;
 }
 
@@ -49,11 +51,23 @@ void create_file(char *filename) {
     if (filename_length == MAX_FILENAME_SIZE + 1) {
         printf("Filename is too long\n");
     }
+    printf("BEFORE GET_COMPLETE_FILEPATH\n");
     char *filepath = get_complete_filepath_storing(filename);
+    printf("%s\n",filepath);
+
+    struct stat st = {0};
+    if (stat(STORING_PATH, &st) == -1) {
+        mkdir(STORING_PATH, 0700);
+    }
+
+    printf("AFTER GET_COMPLETE_FILEPATH\n");
+
     // LEAK MEMOIRE INDIQUE PAR CLION MAIS C'EST A CAUSE DU FLAG O_SYNC NON RECONNU SUR WINDOWS ET Y A RIEN TQT
-    int fd = open(filepath, O_CREAT | O_EXCL | O_SYNC | O_WRONLY, S_IWUSR);
+    // Create a file
+    fopen(filepath, "w");
+    printf("file creating\n");
+    //free the filepath
     free(filepath);
-    close(fd);
 }
 
 int write_file_content(char *filename, char file_content[], size_t nb_char_to_write) {
@@ -72,7 +86,7 @@ int write_file_content(char *filename, char file_content[], size_t nb_char_to_wr
     return nb_bytes_wrote;
 }
 
-char *get_filename_from_message(char msg[INPUT_SIZE]) {
+char *get_first_string(char msg[INPUT_SIZE]) {
     char *ptr = strchr(msg, ';');
     char *ptr2 = strchr(ptr + 1, ';');
     size_t filename_length = strlen(ptr + 1) - strlen(ptr2);
@@ -83,10 +97,13 @@ char *get_filename_from_message(char msg[INPUT_SIZE]) {
         i++;
     }
     filename[i] = '\0';
+    for(int j=0;j<sizeof(filename);j++){
+        printf("%c",filename[i]);
+    }
     return filename;
 }
 
-char *get_file_content_from_message(char msg[INPUT_SIZE]) {
+char *get_second_string(char msg[INPUT_SIZE]) {
     char *ptr2 = strchr(&msg[3], ';'); // to get the second ;
     char *tok = strtok(ptr2 + 1, "\0");
     return tok;

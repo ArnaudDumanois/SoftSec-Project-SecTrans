@@ -4,7 +4,6 @@
 #include "../constants.h"
 
 void add_action(char msg_to_send[INPUT_SIZE], char action);
-
 void add_filename(char msg_to_send[INPUT_SIZE], char filename[]);
 
 void add_string(char msg_to_send[INPUT_SIZE], char *string);
