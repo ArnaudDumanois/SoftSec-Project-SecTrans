@@ -32,53 +32,60 @@ void hash_password(const char *password, const char *salt, char *hashed_password
     SHA256_Final((unsigned char *)hashed_password, &sha256);
 }
 
-void save_user(const User *user) {
+int save_user(const char *usrname, const char *passwd) {
     FILE *file = fopen(USERS_DB_FILE, "ab");
     if (!file) {
         fprintf(stderr, "Erreur lors de l'ouverture du fichier des utilisateurs.\n");
         exit(EXIT_FAILURE);
     }
 
-    if (fwrite(user, sizeof(User), 1, file) != 1) {
+    User *new_user = (User *)malloc(sizeof(User));
+    strcpy(new_user->username,usrname);
+    generate_salt(new_user->salt);
+    hash_password(passwd, new_user->salt, new_user->hashed_password);
+
+
+    if (fwrite(new_user, sizeof(User), 1, file) != 1) {
         fprintf(stderr, "Erreur lors de l'écriture de l'utilisateur dans le fichier.\n");
         fclose(file);
-        exit(EXIT_FAILURE);
+        return -1;
     }
 
     fclose(file);
+    return 1;
 }
 
 int authenticate_user(const char *username, const char *password) {
-    printf("AUTH USER\n");
-    int fd = open(USERS_DB_FILE, O_RDONLY | O_CREAT | O_EXCL, S_IRUSR);
-    if(fd==-1) {
-        perror("Erreur");
+    int DB_READER = open(USERS_DB_FILE, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if(DB_READER==-1) {
+        perror("Erreur lors de l'ouverture/création de la DB");
         exit(EXIT_FAILURE);
     }
-   /* FILE *file = fopen(USERS_DB_FILE, "rb");
-    if (!file) {
-        printf("Authenticate User\n");
-        fprintf(stderr, "Erreur lors de l'ouverture du fichier des utilisateurs.\n");
-        exit(EXIT_FAILURE);
-    }*/
+    printf("DB OUVERTE !\n");
 
-   /*
     User user;
-    while (fread(&user, sizeof(User), 1, file) == 1) {
+    ssize_t read_result;
+    int authentication_result = 0;  // Par défaut, l'authentification échoue
+
+    while ((read_result = read(DB_READER, &user, sizeof(User))) == sizeof(User)) {
         if (strcmp(user.username, username) == 0) {
             char hashed_password[MAX_PASSWORD_LENGTH];
             hash_password(password, user.salt, hashed_password);
+
             if (strcmp(hashed_password, user.hashed_password) == 0) {
-                fclose(file);
-                return 1; // Authentification réussie
-            } else {
-                break; // Utilisateur trouvé, mais mot de passe incorrect
+                authentication_result = 1; // Authentification réussie
+                break;
             }
         }
-    }*/
+    }
 
-    close(fd);
-    return 0; // Aucun utilisateur trouvé
+    if (read_result == -1) {
+        perror("Erreur lors de la lecture du fichier des utilisateurs");
+        exit(EXIT_FAILURE);
+    }
+
+    close(DB_READER);
+    return authentication_result;
 }
 
 int user_exists(const char *username, const char *password) {

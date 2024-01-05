@@ -105,6 +105,7 @@ void add_login(char *msg_to_send,char *username, char *passwd) {
     strcat(msg_to_send,username);
     strcat(msg_to_send,";");
     strcat(msg_to_send,passwd);
+    strcat(msg_to_send,";");
 }
 
 int login(char *username, char *passwd, int port){
@@ -118,6 +119,20 @@ int login(char *username, char *passwd, int port){
     sending(msg_to_send,port);
     //char response[INPUT_SIZE];
     //listen_message(response);
+    return 0;
+}
+
+int registration(char *username, char *passwd, int port){
+    char *msg_to_send = malloc(INPUT_SIZE);
+    if (msg_to_send == NULL) {
+    fprintf(stderr, "Erreur d'allocation de mémoire.\n");
+    exit(EXIT_FAILURE);
+    }
+    add_action(msg_to_send,ACTION_REGISTER);
+    add_login(msg_to_send,username,passwd);
+    sending(msg_to_send,port);
+    char response[INPUT_SIZE];
+    listen_message(response);
     return 0;
 }
 

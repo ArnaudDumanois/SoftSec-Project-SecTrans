@@ -61,18 +61,23 @@ char *get_username(const char *message) {
 
 void manage_request(char message[INPUT_SIZE]) {
     printf("MANAGE REQUEST\n");
-    char *action = strtok(message,";");
+    char *action = malloc(total_size_between_semicolons(message,0));
+    extract_between_semicolons_at_index(message,0,action, sizeof(action));
 
     if (strcmp(action,ACTION_CREATE)==0 || strcmp(action,ACTION_ADD)==0 || strcmp(action,ACTION_END)==0) {
-        char *filename = get_first_string(message);
-        char *file_content = get_second_string(message);
+        char *filename = malloc(total_size_between_semicolons(message,1));
+        extract_between_semicolons_at_index(message,1,filename, sizeof(filename));
+
+        char *file_content = malloc(total_size_between_semicolons(message,2));
+        extract_between_semicolons_at_index(message,2,file_content, sizeof(file_content));
         //printf("Message content : %s\n", file_content);
         manage_file(action, filename, file_content);
         free(filename);
         clear_array(message, INPUT_SIZE);
     }
     else if (strcmp(action,ACTION_DOWNLOAD)==0) {
-        char *filename = get_first_string(message);
+        char *filename = malloc(total_size_between_semicolons(message,1));
+        extract_between_semicolons_at_index(message,1,filename, sizeof(filename));
         char *filepath = get_complete_filepath_storing(filename);
         printf("%s\n", filepath);
         send_file(filepath, CLIENT_PORT);
@@ -83,23 +88,30 @@ void manage_request(char message[INPUT_SIZE]) {
     else if (strcmp(action,ACTION_LOGIN)==0) {
         printf("LOGIN ACTION !\n");
         //vérifier si user existe
-        int res = authenticate_user(get_first_string(message), get_second_string(message));
+        char *usrname = malloc(total_size_between_semicolons(message,1));
+        extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
+
+        char *passwd = malloc(total_size_between_semicolons(message,2));
+        extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
+
+        int res = authenticate_user(usrname,passwd);
         if (res == 1) { printf("Auth Réussie"); }
         else { printf("Auth échouée"); }
     }
     else if (strcmp(action,ACTION_REGISTER)==0){
+        printf("REGISTER ACTION !\n");
         //vérifier si user existe
-        int res = authenticate_user(get_first_string(message), get_second_string(message));
-        if (res == 1) { printf("Le compte existe déjà !"); }
-        else {
-            printf("Création du compte...");
-            User newUser;
-            strcpy(newUser.username, "utilisateur1");
-            generate_salt(newUser.salt);
-            hash_password("motdepasse123", newUser.salt, newUser.hashed_password);
-            save_user(&newUser);
+        char *usrname = malloc(total_size_between_semicolons(message,1));
+        extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
 
-        }
+        char *passwd = malloc(total_size_between_semicolons(message,2));
+        extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
+
+        int res = save_user(usrname,passwd);
+        if (res == 1) { printf("User registered !"); }
+        else { printf("Error during user registered !"); }
+
+        //sendResponse(action,res);
     }
 }
 

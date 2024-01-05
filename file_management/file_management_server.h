@@ -11,13 +11,10 @@ void create_file(char *filename);
 
 int write_file_content(char *filename, char file_content[], size_t nb_char_to_write);
 
-char *get_first_string(char msg[INPUT_SIZE]);
-
 boolean does_file_exist(char filename[]);
 
 struct stat *get_struct_stat_of_file(char filename[]);
 
-char *get_second_string(char msg[INPUT_SIZE]);
 
 char *get_complete_filepath_storing(char *filename);
 
