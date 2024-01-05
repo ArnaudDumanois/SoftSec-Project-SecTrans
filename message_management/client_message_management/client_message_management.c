@@ -107,7 +107,7 @@ void add_login(char *msg_to_send,char *username, char *passwd) {
     strcat(msg_to_send,";");
 }
 
-int login(char *username, char *passwd, int port){
+void login(char *username, char *passwd, int port){
     char *msg_to_send = malloc(INPUT_SIZE);
     if (msg_to_send == NULL) {
         fprintf(stderr, "Erreur d'allocation de mémoire.\n");
@@ -116,9 +116,6 @@ int login(char *username, char *passwd, int port){
     add_action(msg_to_send,ACTION_LOGIN);
     add_login(msg_to_send,username,passwd);
     sending(msg_to_send,port);
-    //char response[INPUT_SIZE];
-    //listen_message(response);
-    return 0;
 }
 
 void registration(char *username, char *passwd, int port){
@@ -151,15 +148,11 @@ void client_sendResponse(char *action,int response, int port){
         fprintf(stderr,"Aucune action en correspond à celle décrite !");
         exit(EXIT_FAILURE);
     }
-    printf("REPONSE STEP 0: %s\n", response_str);
     insert_between_semicolons(response_str, ACTION_REPONSE);
-    printf("REPONSE ACTION: %s\n", response_str);
     insert_between_semicolons(response_str, action);
-    printf("REPONSE ACTION/INITIAL_ACTION: %s\n", response_str);
     char *intConvert = malloc(8);
     sprintf(intConvert, "%d", response);
     insert_between_semicolons(response_str, intConvert);
-    printf("REPONSE ACTION/INITIAL_ACTION/RESPONSE %s\n", response_str);
 
     //SYSTEME DE REPONSE A REVOIR
     sending(response_str,port);
