@@ -16,8 +16,8 @@ all: client server
 client: client.o $(COMMON_DEPENDENCIES)
 	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/client.o $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lclient $(DYNLIB)
 
-server: server.o $(COMMON_DEPENDENCIES)
-	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/server.o  $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lserver $(DYNLIB)
+server: server.o $(COMMON_DEPENDENCIES) $(TARGET_FOLDER)/rsa.o
+	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/server.o $(TARGET_FOLDER)/rsa.o $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lserver -L/usr/lib -lcrypto -lssl $(DYNLIB)
 
 client.o: client.c client.h $(COMMON_DEPENDENCIES)
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@ $(DYNLIB)
@@ -52,8 +52,11 @@ $(TARGET_FOLDER)/server_message_management.o: message_management/server_message_
 $(TARGET_FOLDER)/common_message_management.o: message_management/common_message_management.c message_management/common_message_management.h constants.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(TARGET_FOLDER)/rsa.o: rsa/rsa.c
+	$(CC) $(CFLAGS) -c $< -o $@ -L/usr/lib -lcrypto -lssl
+
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@
 
 clean:
-	rm -f $(TARGET_FOLDER)/*.o $(TARGET_FOLDER)/SecTrans $(TARGET_FOLDER)/client $(TARGET_FOLDER)/server ./files_to_store/*
+	rm -f $(TARGET_FOLDER)/* ./files_to_store/*

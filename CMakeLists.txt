@@ -33,4 +33,5 @@ add_executable(SoftSec_Project_SecTrans
         utils/array_utils.c
         message_management/common_message_management.c
         message_management/common_message_management.h
+        rsa/rsa.c
 )
