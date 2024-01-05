@@ -62,7 +62,6 @@ int save_user(const char *usrname, const char *passwd) {
 }
 
 int authenticate_user(const char *username, const char *password) {
-    //printf("Auth user FUNC !");
     int file_descriptor = open(USERS_DB_FILE, O_RDONLY);
 
     if (file_descriptor == -1) {
@@ -75,9 +74,11 @@ int authenticate_user(const char *username, const char *password) {
     int authentication_result = 0;  // Par défaut, l'authentification échoue
 
     while ((read_result = read(file_descriptor, &user, sizeof(User))) == sizeof(User)) {
+        printf("%s\n%s\n",user.username,user.hashed_password);
         if (strcmp(user.username, username) == 0) {
             char hashed_password[MAX_PASSWORD_LENGTH];
             hash_password(password, user.salt, hashed_password);
+            printf("HASHED PASSWD: %s\n",hashed_password);
 
             if (strcmp(hashed_password, user.hashed_password) == 0) {
                 authentication_result = 1; // Authentification réussie

@@ -73,7 +73,7 @@ int manage_request(char message[INPUT_SIZE]) {
         clear_array(message, INPUT_SIZE);
     }
     else if (strcmp(action,ACTION_LOGIN)==0) {
-        printf("LOGIN ACTION !\n");
+        //printf("LOGIN ACTION !\n");
         //vérifier si user existe
         char *usrname = malloc(total_size_between_semicolons(message,1));
         extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
@@ -83,8 +83,9 @@ int manage_request(char message[INPUT_SIZE]) {
 
         int res = authenticate_user(usrname,passwd);
 
-        if (res == 1) { printf("Auth Réussie"); }
-        else { printf("Auth échouée"); }
+        if (res == 1) { printf("Auth Réussie\n"); }
+        else { printf("Auth échouée\n"); }
+        sendingResponse(action,res);
     }
     else if (strcmp(action,ACTION_REGISTER)==0){
         printf("REGISTER ACTION !\n");
