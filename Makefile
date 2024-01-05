@@ -69,4 +69,4 @@ $(TARGET_FOLDER)/common_message_management.o: message_management/common_message_
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@
 
 clean:
-	rm -f $(TARGET_FOLDER)/* $(TARGET_FOLDER)/SecTrans $(TARGET_FOLDER)/client $(TARGET_FOLDER)/server ./files_to_store/*
+	rm -f $(TARGET_FOLDER)/*.o $(TARGET_FOLDER)/SecTrans $(TARGET_FOLDER)/client $(TARGET_FOLDER)/server ./files_to_store/* $(TARGET_FOLDER)/users.db

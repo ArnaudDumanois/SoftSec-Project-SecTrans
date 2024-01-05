@@ -5,7 +5,6 @@
 #include "../../file_management/file_management.h"
 #include <unistd.h>
 #include "../../utils/array_utils.h"
-#include "../../actions.h"
 #include "../server_message_management/server_message_management.h"
 #include "../common_message_management.h"
 
@@ -122,7 +121,7 @@ int login(char *username, char *passwd, int port){
     return 0;
 }
 
-int registration(char *username, char *passwd, int port){
+void registration(char *username, char *passwd, int port){
     char *msg_to_send = malloc(INPUT_SIZE);
     if (msg_to_send == NULL) {
     fprintf(stderr, "Erreur d'allocation de mémoire.\n");
@@ -131,9 +130,39 @@ int registration(char *username, char *passwd, int port){
     add_action(msg_to_send,ACTION_REGISTER);
     add_login(msg_to_send,username,passwd);
     sending(msg_to_send,port);
-    char response[INPUT_SIZE];
-    listen_message(response);
-    return 0;
+
+    free(msg_to_send);
+}
+
+/*
+ * ANSWER FORMAT :
+ * RES;ACTION;RESULT;
+ * */
+
+void client_sendResponse(char *action,int response, int port){
+    printf("BUILDING RESPONSE...\n");
+    char *response_str = calloc(INPUT_SIZE, sizeof(char));
+    if (response_str == NULL) {
+        fprintf(stderr, "Erreur d'allocation de mémoire.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if(is_valid_action(action)!=1){
+        fprintf(stderr,"Aucune action en correspond à celle décrite !");
+        exit(EXIT_FAILURE);
+    }
+    printf("REPONSE STEP 0: %s\n", response_str);
+    insert_between_semicolons(response_str, ACTION_REPONSE);
+    printf("REPONSE ACTION: %s\n", response_str);
+    insert_between_semicolons(response_str, action);
+    printf("REPONSE ACTION/INITIAL_ACTION: %s\n", response_str);
+    char *intConvert = malloc(8);
+    sprintf(intConvert, "%d", response);
+    insert_between_semicolons(response_str, intConvert);
+    printf("REPONSE ACTION/INITIAL_ACTION/RESPONSE %s\n", response_str);
+
+    //SYSTEME DE REPONSE A REVOIR
+    sending(response_str,port);
 }
 
 

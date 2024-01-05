@@ -4,6 +4,7 @@
 #include "file_management/file_management.h"
 #include "server.h"
 #include "message_management/client_message_management/client_message_management.h"
+#include "message_management/server_message_management/server_message_management.h"
 #include "./libs/client_libs/messages.h"
 #include "libs/logger/logger_sha.h"
 
@@ -49,11 +50,11 @@ int main(int argc, char *argv[]) {
                     printf("%s",getManualForSpecificCommand(argv[1]));
                 }
                 else{
-                    int res = login("abc","cde",2000);
-                    if(res==1){
-                        printf("LOGIN SUCCESFULL");
-                    }
-                    printf(("LOGIN ERROR !"));
+                    login(argv[2],argv[3],2000);
+                    char message[INPUT_SIZE];
+                    int res = listen_message(message);
+                    if(res==1){printf("LOGIN SUCCESFULL");}
+                    else{printf(("LOGIN ERROR !"));}
                 }
             }
             else if (strncmp(argv[1], "-register",9) == 0){
@@ -62,9 +63,11 @@ int main(int argc, char *argv[]) {
                     printf("%s",getManualForSpecificCommand(argv[1]));
                 }
                 else{
-                    int res = registration("abc","cde",2000);
+                    registration(argv[2],argv[3],2000);
+                    char message[INPUT_SIZE];
+                    int res = listen_message(message);
                     if(res==1){printf("USER REGISTERED !");}
-                    printf(("REGISTRATION ERROR !"));
+                    else{printf(("REGISTRATION ERROR !"));}
                 }
             }
     }
