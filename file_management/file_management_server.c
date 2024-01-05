@@ -86,26 +86,3 @@ int write_file_content(char *filename, char file_content[], size_t nb_char_to_wr
     return nb_bytes_wrote;
 }
 
-char *get_first_string(char msg[INPUT_SIZE]) {
-    char *ptr = strchr(msg, ';');
-    char *ptr2 = strchr(ptr + 1, ';');
-    size_t filename_length = strlen(ptr + 1) - strlen(ptr2);
-    char *filename = (char *) malloc(sizeof(char) * (filename_length + 1));
-    int i = 0;
-    for (char *p = ptr + 1; p != ptr2; p++) {
-        filename[i] = *p;
-        i++;
-    }
-    filename[i] = '\0';
-    for(int j=0;j<sizeof(filename);j++){
-        printf("%c",filename[i]);
-    }
-    return filename;
-}
-
-char *get_second_string(char msg[INPUT_SIZE]) {
-    char *ptr2 = strchr(&msg[3], ';'); // to get the second ;
-    char *tok = strtok(ptr2 + 1, "\0");
-    return tok;
-}
-

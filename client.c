@@ -56,6 +56,17 @@ int main(int argc, char *argv[]) {
                     printf(("LOGIN ERROR !"));
                 }
             }
+            else if (strncmp(argv[1], "-register",9) == 0){
+                if(argc!=4){
+                    printf("%s", "Wrong command format, See manual bellow !\n");
+                    printf("%s",getManualForSpecificCommand(argv[1]));
+                }
+                else{
+                    int res = registration("abc","cde",2000);
+                    if(res==1){printf("USER REGISTERED !");}
+                    printf(("REGISTRATION ERROR !"));
+                }
+            }
     }
     else printf("Three commands are available : ./client -up filepath ; ./client -down filename ; ./client -list");
 

@@ -24,7 +24,7 @@ typedef struct {
 
 void generate_salt(char *salt);
 void hash_password(const char *password, const char *salt, char *hashed_password);
-void save_user(const User *user);
+int save_user(const char* usrname,const char* passwd);
 int authenticate_user(const char *username, const char *password);
 int user_exists(const char *username, const char *password);
 
