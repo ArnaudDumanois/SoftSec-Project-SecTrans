@@ -82,6 +82,7 @@ int manage_request(char message[INPUT_SIZE]) {
         extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
 
         int res = authenticate_user(usrname,passwd);
+
         if (res == 1) { printf("Auth Réussie"); }
         else { printf("Auth échouée"); }
     }
@@ -105,7 +106,7 @@ int manage_request(char message[INPUT_SIZE]) {
         extract_between_semicolons_at_index(message, 2, res, sizeof(res));
         return (int) strtol(res, NULL, 10);
     }
-    return -10;
+    return -99;
 }
 
 int listen_message(char message[INPUT_SIZE]) {
