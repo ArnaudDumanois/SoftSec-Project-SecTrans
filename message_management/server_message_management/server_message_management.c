@@ -11,7 +11,7 @@
 #include "../common_message_management.h"
 #include "../../libs/logger/logger_sha.h"
 
-void list_files(char msg_to_send[INPUT_SIZE]) { // TODO : to finish
+void list_files(char msg_to_send[MESSAGE_SIZE]) { // TODO : to finish
     DIR *d;
     struct dirent *dir;
     d = opendir(STORING_PATH);
@@ -46,39 +46,39 @@ void sendingResponse(char *action,int res){
     client_sendResponse(action,res,CLIENT_PORT);
 }
 
-int manage_request(char message[INPUT_SIZE]) {
+int manage_request(char message[MESSAGE_SIZE]) {
     printf("MANAGE REQUEST\n");
-    char *action = malloc(total_size_between_semicolons(message,0));
+    char *action = malloc(total_size_between_semicolons(message,0)+1);
     extract_between_semicolons_at_index(message,0,action, sizeof(action));
 
     if (strcmp(action,ACTION_CREATE)==0 || strcmp(action,ACTION_ADD)==0 || strcmp(action,ACTION_END)==0) {
-        char *filename = malloc(total_size_between_semicolons(message,1));
+        char *filename = malloc(total_size_between_semicolons(message,1)+1);
         extract_between_semicolons_at_index(message,1,filename, sizeof(filename));
 
-        char *file_content = malloc(total_size_between_semicolons(message,2));
+        char *file_content = malloc(total_size_between_semicolons(message,2)+1);
         extract_between_semicolons_at_index(message,2,file_content, sizeof(file_content));
         //printf("Message content : %s\n", file_content);
         manage_file(action, filename, file_content);
         free(filename);
-        clear_array(message, INPUT_SIZE);
+        clear_array(message, MESSAGE_SIZE);
     }
     else if (strcmp(action,ACTION_DOWNLOAD)==0) {
-        char *filename = malloc(total_size_between_semicolons(message,1));
+        char *filename = malloc(total_size_between_semicolons(message,1)+1);
         extract_between_semicolons_at_index(message,1,filename, sizeof(filename));
         char *filepath = get_complete_filepath_storing(filename);
         printf("%s\n", filepath);
         send_file(filepath, CLIENT_PORT);
         free(filename);
         free(filepath);
-        clear_array(message, INPUT_SIZE);
+        clear_array(message, MESSAGE_SIZE);
     }
     else if (strcmp(action,ACTION_LOGIN)==0) {
-        //printf("LOGIN ACTION !\n");
-        //vérifier si user existe
-        char *usrname = malloc(total_size_between_semicolons(message,1));
-        extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
+        size_t size_usrname = total_size_between_semicolons(message,1)+1;
+        char *usrname = malloc(size_usrname);
+        extract_between_semicolons_at_index(message,1,usrname,size_usrname);
 
-        char *passwd = malloc(total_size_between_semicolons(message,2));
+        size_t size_passwd = total_size_between_semicolons(message,2)+1;
+        char *passwd = malloc(size_passwd);
         extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
 
         int res = authenticate_user(usrname,passwd);
@@ -89,16 +89,24 @@ int manage_request(char message[INPUT_SIZE]) {
     }
     else if (strcmp(action,ACTION_REGISTER)==0){
         printf("REGISTER ACTION !\n");
-        char *usrname = malloc(total_size_between_semicolons(message,1));
-        extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
-
-        char *passwd = malloc(total_size_between_semicolons(message,2));
-        extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
-
-        int res = save_user(usrname,passwd);
-        if (res == 1) { printf("User registered !\n"); }
-        else { printf("Error during user registered !\n"); }
-
+        int res;
+        size_t username_size = total_size_between_semicolons(message,1);
+        if(username_size>(size_t)MAX_USERNAME_LENGTH){res = ERROR_USERNAME_TOO_LONG;printf("USERNAME TOO LONG !\n");}
+        else{
+            char *usrname = malloc(username_size+1);
+            extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
+            size_t passwd_size = total_size_between_semicolons(message,2);
+            if(passwd_size>(size_t)MAX_PASSWORD_LENGTH){res=ERROR_PASSWORD_TOO_LONG;printf("PASSWORD TOO LONG !\n");free(usrname);}
+            else{
+                char *passwd = malloc(passwd_size+1);
+                extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
+                res = save_user(usrname,passwd);
+                free(passwd);
+                free(usrname);
+                if (res == 1) { printf("User registered !\n"); }
+                else { printf("Error during user registered !\n"); }
+            }
+        }
         sendingResponse(action,res);
     }
     else if (strcmp(action,ACTION_REPONSE)==0) {
@@ -110,7 +118,7 @@ int manage_request(char message[INPUT_SIZE]) {
     return -99;
 }
 
-int listen_message(char message[INPUT_SIZE]) {
+int listen_message(char message[MESSAGE_SIZE]) {
         get_message(message);
         printf("Message reçu : %s\n", message);
         return manage_request(message);

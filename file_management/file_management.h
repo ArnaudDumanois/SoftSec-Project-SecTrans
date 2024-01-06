@@ -8,11 +8,11 @@ int get_size(char *file_path);
 
 int get_total_size(char *file_path);
 
-boolean is_filepath_well_formed(char filepath[INPUT_SIZE]);
+boolean is_filepath_well_formed(char filepath[MESSAGE_SIZE]);
 
-int open_file(char filepath[INPUT_SIZE], short flag);
+int open_file(char filepath[MESSAGE_SIZE], short flag);
 
-char *get_file_name_from_filepath(char filepath[INPUT_SIZE]);
+char *get_file_name_from_filepath(char filepath[MESSAGE_SIZE]);
 
 boolean is_filepath_a_file(char *filepath);
 

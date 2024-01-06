@@ -4,13 +4,13 @@
 #include <malloc.h>
 #include <stdlib.h>
 
-void add_action(char msg_to_send[INPUT_SIZE], char *action) {
+void add_action(char msg_to_send[MESSAGE_SIZE], char *action) {
     size_t lenAction = strlen(action);
     for(int i=0;i<lenAction;i++){msg_to_send[i]=action[i];}
     msg_to_send[lenAction]=';';
 }
 
-void add_filename(char msg_to_send[INPUT_SIZE], char filename[]) { // TODO : checks to do to not exceed array's size
+void add_filename(char msg_to_send[MESSAGE_SIZE], char filename[]) { // TODO : checks to do to not exceed array's size
     if(msg_to_send[1] == ';'){
         strcat(msg_to_send, filename);
         msg_to_send[2 + strlen(filename)] = ';';
@@ -47,7 +47,7 @@ void insert_between_semicolons(char *input, const char *new_action) {
 
 void extract_between_semicolons_at_index(const char *input, int index, char *output, size_t output_size) {
     const char *start = input;
-    const char *end = input;
+    const char *end;
 
     // Trouver le début du N-ème élément
     for (int i = 0; i < index; ++i) {
@@ -67,7 +67,7 @@ void extract_between_semicolons_at_index(const char *input, int index, char *out
     }
 
     size_t length = end - start;
-    if (length >= output_size) {
+    if (length >= output_size+1) {
         fprintf(stderr, "Output buffer too small.\n");
         return;
     }

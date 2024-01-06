@@ -10,7 +10,7 @@ int main() {
 
     // Traitement des connexions
     while(1){
-        char message[INPUT_SIZE];
+        char message[MESSAGE_SIZE];
         listen_message(message);
     }
 
