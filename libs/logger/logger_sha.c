@@ -18,18 +18,18 @@
 #define USERS_DB_FILE "users.db"
 
 void generate_salt(char *salt) {
-    if (RAND_bytes((unsigned char*)salt, SALT_SIZE) != 1) {
+    if (RAND_bytes((unsigned char *) salt, SALT_SIZE) != 1) {
         fprintf(stderr, "Erreur lors de la génération du sel.\n");
         exit(EXIT_FAILURE);
     }
 }
 
-void hash_password(const char *password, const char *salt, char *hashed_password) {
+void hash_generator(const char *input, const char *salt, char *hashed_output) {
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
     SHA256_Update(&sha256, salt, SALT_SIZE);
-    SHA256_Update(&sha256, password, strlen(password));
-    SHA256_Final((unsigned char *)hashed_password, &sha256);
+    SHA256_Update(&sha256, input, strlen(input));
+    SHA256_Final((unsigned char *) hashed_output, &sha256);
 }
 
 int save_user(const char *usrname, const char *passwd) {
@@ -37,31 +37,41 @@ int save_user(const char *usrname, const char *passwd) {
 
     if (file_descriptor == -1) {
         perror("Erreur lors de l'ouverture du fichier des utilisateurs");
-        exit(EXIT_FAILURE);
+        close(file_descriptor);
+        return INTERNAL_ERROR;
     }
 
-    if (user_exists(usrname)) {
+    if (user_exists(usrname) == USER_ALREADY_EXIST) {
         printf("USER EXISTE !");
         close(file_descriptor);
-        return -1;
+        return USER_ALREADY_EXIST;
     }
 
-    User new_user;
-    strcpy(new_user.username, usrname);
-    generate_salt(new_user.salt);
-    hash_password(passwd, new_user.salt, new_user.hashed_password);
+    User *new_user = malloc(sizeof(User));
+    strcpy(new_user->username, usrname);
+    generate_salt(new_user->password_salt);
+    hash_generator(passwd, new_user->password_salt, new_user->hashed_password);
 
-    if (write(file_descriptor, &new_user, sizeof(User)) != sizeof(User)) {
+    if (write(file_descriptor, new_user, sizeof(User)) != sizeof(User)) { <- ça c'est carrément foireux
         perror("Erreur lors de l'écriture de l'utilisateur dans le fichier");
         close(file_descriptor);
-        return -1;
+        return INTERNAL_ERROR;
     }
+
+    printf("passwd salt: %s\n", new_user->password_salt);
 
     //Le compté est créé
     //on créé un dossier
-
+    char *folder_name = malloc(sizeof(new_user->username) + sizeof(new_user->hashed_password));
+    strcat(folder_name, new_user->username);
+    strcat(folder_name, new_user->hashed_password);
+    generate_salt(new_user->global_salt);
+    char *folder_hashedname = malloc(sizeof(folder_name));
+    hash_generator(folder_name, new_user->global_salt, folder_hashedname);
+    //printf("REGISTER FOLDER HASHED NAME : %s\n",folder_hashedname);
     close(file_descriptor);
-    return 1;
+    free(new_user);
+    return REGISTRATION_DONE;
 }
 
 int authenticate_user(const char *username, const char *password) {
@@ -69,22 +79,32 @@ int authenticate_user(const char *username, const char *password) {
 
     if (file_descriptor == -1) {
         perror("Erreur lors de l'ouverture du fichier des utilisateurs");
-        exit(EXIT_FAILURE);
+        return INTERNAL_ERROR;
     }
 
     User user;
     ssize_t read_result;
-    int authentication_result = 0;  // Par défaut, l'authentification échoue
+    int authentication_result = AUTH_ERROR;  // Par défaut, l'authentification échoue
 
     while ((read_result = read(file_descriptor, &user, sizeof(User))) == sizeof(User)) {
-        printf("%s\n%s\n", user.username, user.hashed_password);
         if (strcmp(user.username, username) == 0) {
+            printf("USERNAME SAME !\n");
             char hashed_password[MAX_PASSWORD_LENGTH];
-            hash_password(password, user.salt, hashed_password);
-            printf("HASHED PASSWD: %s\n", hashed_password);
+            hash_generator(password, user.password_salt, hashed_password);
+
+            printf("passwd salt:\n\n");
+            printf("%s", user.password_salt);
 
             if (strcmp(hashed_password, user.hashed_password) == 0) {
-                authentication_result = 1; // Authentification réussie
+                authentication_result = AUTH_DONE; // Authentification réussie
+
+                char *folder_name = malloc(sizeof(user.username) + sizeof(user.hashed_password));
+                strcat(folder_name, user.username);
+                strcat(folder_name, user.hashed_password);
+                generate_salt(user.global_salt);
+                char *folder_hashedname = malloc(sizeof(user.username) + sizeof(user.hashed_password));
+                hash_generator(folder_name, user.global_salt, folder_hashedname);
+                //printf("LOGIN FOLDER HASHED NAME : %s\n",folder_hashedname);
             }
 
             break; // Utilisateur trouvé, que le mot de passe soit correct ou non
@@ -93,7 +113,7 @@ int authenticate_user(const char *username, const char *password) {
 
     if (read_result == -1) {
         perror("Erreur lors de la lecture du fichier des utilisateurs");
-        exit(EXIT_FAILURE);
+        return INTERNAL_ERROR;
     }
 
     close(file_descriptor);
@@ -105,26 +125,26 @@ int user_exists(const char *username) {
 
     if (file_descriptor == -1) {
         perror("Erreur lors de l'ouverture du fichier des utilisateurs");
-        exit(EXIT_FAILURE);
+        return INTERNAL_ERROR;
     }
 
     User user;
     ssize_t read_result;
-    int user_exists = 0;  // Par défaut, l'utilisateur n'existe pas
+    int result = USER_NOT_EXIST;  // Par défaut, l'utilisateur n'existe pas
 
     while ((read_result = read(file_descriptor, &user, sizeof(User))) == sizeof(User)) {
         if (strcmp(user.username, username) == 0) {
-            user_exists = 1;
+            result = USER_ALREADY_EXIST;
             break;  // Utilisateur trouvé
         }
     }
 
     if (read_result == -1) {
         perror("Erreur lors de la lecture du fichier des utilisateurs");
-        exit(EXIT_FAILURE);
+        return INTERNAL_ERROR;
     }
 
     close(file_descriptor);
-    return user_exists;
+    return result;
 }
 

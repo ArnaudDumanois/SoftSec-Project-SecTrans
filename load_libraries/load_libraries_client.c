@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "../client.h"
 
-static void (*snd_msg)(char msg[INPUT_SIZE], int port);
+static void (*snd_msg)(char msg[MESSAGE_SIZE], int port);
 
 static void *libraryHandle;
 
@@ -26,7 +26,7 @@ void unloadLibrary_client() { // TODO : needs to do a refactor to include the un
     dlclose(libraryHandle);
 }
 
-int send_message(char msg[INPUT_SIZE], int port) {
+int send_message(char msg[MESSAGE_SIZE], int port) {
     loadLibrary_client();
     if (port != SERVER_PORT && port != CLIENT_PORT) return -1;
     snd_msg(msg, port);

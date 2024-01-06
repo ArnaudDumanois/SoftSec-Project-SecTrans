@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
                     }
                 } else {
                     printf("The path to your file is of size : %u. It should be of a maximum size of : %d", size,
-                           INPUT_SIZE - 1);
+                           MESSAGE_SIZE - 1);
                 }
             }
             else if (strncmp(argv[1], "-down", 5) == 0) {
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
                     stop_server();
                 } else {
                     printf("The path to your file is of size : %u. It should be of a maximum size of : %d", size,
-                           INPUT_SIZE - 1);
+                           MESSAGE_SIZE - 1);
                 }
             }
             else if (strncmp(argv[1], "-login", 6) == 0){
@@ -51,9 +51,9 @@ int main(int argc, char *argv[]) {
                 }
                 else{
                     login(argv[2],argv[3],2000);
-                    char message[INPUT_SIZE];
+                    char message[MESSAGE_SIZE];
                     int res = listen_message(message);
-                    if(res==1){printf("LOGIN SUCCESFULL");}
+                    if(res==AUTH_DONE){printf("LOGIN SUCCESFULL");}
                     else{printf(("LOGIN ERROR !"));}
                 }
             }
@@ -64,9 +64,12 @@ int main(int argc, char *argv[]) {
                 }
                 else{
                     registration(argv[2],argv[3],2000);
-                    char message[INPUT_SIZE];
+                    char message[MESSAGE_SIZE];
                     int res = listen_message(message);
-                    if(res==1){printf("USER REGISTERED !");}
+                    if(res==REGISTRATION_DONE){printf("USER REGISTERED !");}
+                    else if(res==USER_ALREADY_EXIST){printf("Un compte existe déjà");}
+                    else if(res==ERROR_PASSWORD_TOO_LONG){ printf("PASSWORD TOO LONG !\n");}
+                    else if(res==ERROR_USERNAME_TOO_LONG){printf("USERNAME TOO LONG !\n");}
                     else{printf(("REGISTRATION ERROR !"));}
                 }
             }

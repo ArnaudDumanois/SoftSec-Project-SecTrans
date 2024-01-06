@@ -10,7 +10,7 @@ int main() {
     printf("Serveur démarré sur le port %d\n", SERVER_PORT);
 
     while(1){
-        char message[INPUT_SIZE];
+        char message[MESSAGE_SIZE];
         listen_message(message);
     }
     // Traitement des connexions (exemple : attente d'un message)
