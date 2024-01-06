@@ -1,6 +1,4 @@
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
-#include <openssl/err.h>
+#include "rsa.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -53,3 +51,80 @@ void generate_keys(char **private_key, char **public_key) {
     BIO_free_all(pri_bio);
     BIO_free_all(pub_bio);
 }
+
+int encrypt(const unsigned char *plaintext, int plaintextLen, RSA *publicKey, unsigned char *ciphertext) {
+    int flag = RSA_SSLV23_PADDING;
+    int encryptedLen = RSA_public_encrypt(plaintextLen, plaintext, ciphertext, publicKey, flag);
+
+    if (encryptedLen == -1) {
+        exit(EXIT_FAILURE);
+    }
+
+    return encryptedLen;
+}
+
+int decrypt(const unsigned char* ciphertext, int ciphertextLen, RSA* privateKey, unsigned char* plaintext) {
+    int flag = RSA_SSLV23_PADDING;
+    int decryptedLen = RSA_private_decrypt(ciphertextLen, ciphertext, plaintext, privateKey, flag);
+
+    if (decryptedLen == -1) {
+        exit(EXIT_FAILURE);
+    }
+
+    return decryptedLen;
+}
+
+/*
+    RSA_free(publicKey);
+
+    RSA_free(privateKey);
+ */
+
+/*unsigned char *encrypt(unsigned char *src, unsigned int len, int *length) {
+    FILE *fp = fopen("public.txt", "r");
+    if (fp == NULL) {
+        perror("file error");
+        return NULL;
+    }
+    EVP_PKEY *pkey;
+    pkey = PEM_read_PUBKEY(fp, NULL, NULL, NULL);
+    fclose(fp);
+    if (pkey == NULL) {
+        fprintf(stderr, "error: read publics key\n");
+        return NULL;
+    }
+    EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    EVP_PKEY_encrypt_init(ctx);
+    unsigned char *dst = (unsigned char *) malloc(2048);
+    size_t outl;
+    if (!EVP_PKEY_encrypt(ctx, dst, &outl, src, (size_t) len)) {
+        fprintf(stderr, "error: encrypt\n");
+        EVP_PKEY_free(pkey);
+        free(dst);
+        return NULL;
+    }
+    int len2 = outl;
+    EVP_PKEY_free(pkey);
+    EVP_PKEY_CTX_free(ctx);
+    if (length != NULL) {
+        *length = len2;
+    }
+    return dst;
+}
+
+int encrypt(unsigned char *data, int data_len, unsigned char *key, unsigned char *encrypted) {
+    int padding = RSA_PKCS1_PADDING;
+    RSA *rsa = createRSA(key, 1);
+    int result = RSA_public_encrypt(data_len, data, encrypted, rsa, padding);
+    return result;
+}
+
+int decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted)
+{
+    int padding = RSA_PKCS1_PADDING;
+    RSA * rsa;
+            int i = createRSA(key,0);
+    int  result = RSA_private_decrypt(data_len,enc_data,decrypted,rsa,padding);
+    return result;
+}*/
+

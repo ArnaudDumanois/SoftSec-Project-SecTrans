@@ -3,21 +3,23 @@ CFLAGS = -Wall -Werror -g
 DYNLIB = -ldl
 TARGET_FOLDER = ./target-build
 DYNLIB_FOLDER = dynlib
+CRYPTOGRAPHY_COMPILATION_OPTION = -L/usr/lib -lcrypto -lssl
 
 COMMON_DEPENDENCIES_UTILS = $(TARGET_FOLDER)/util.o $(TARGET_FOLDER)/array_utils.o
 COMMON_DEPENDENCIES_LOAD_LIBRARIES = $(TARGET_FOLDER)/load_libraries_client.o $(TARGET_FOLDER)/load_libraries_server.o
 COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT = $(TARGET_FOLDER)/server_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/common_message_management.o
 COMMON_DEPENDENCIES_FILE_MANAGEMENT = $(TARGET_FOLDER)/file_management.o $(TARGET_FOLDER)/file_management_server.o
+COMMON_DEPENDENCIES_CRYPTOGRAPHY = $(TARGET_FOLDER)/rsa.o $(TARGET_FOLDER)/rsa_manager.o
 
-COMMON_DEPENDENCIES = $(COMMON_DEPENDENCIES_UTILS) $(COMMON_DEPENDENCIES_LOAD_LIBRARIES) $(COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT) $(COMMON_DEPENDENCIES_FILE_MANAGEMENT)
+COMMON_DEPENDENCIES = $(COMMON_DEPENDENCIES_UTILS) $(COMMON_DEPENDENCIES_CRYPTOGRAPHY) $(COMMON_DEPENDENCIES_LOAD_LIBRARIES) $(COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT) $(COMMON_DEPENDENCIES_FILE_MANAGEMENT)
 
 all: client server
 
 client: client.o $(COMMON_DEPENDENCIES)
-	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/client.o $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lclient $(DYNLIB)
+	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/client.o $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lclient $(CRYPTOGRAPHY_COMPILATION_OPTION) $(DYNLIB)
 
 server: server.o $(COMMON_DEPENDENCIES) $(TARGET_FOLDER)/rsa.o
-	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/server.o $(TARGET_FOLDER)/rsa.o $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lserver -L/usr/lib -lcrypto -lssl $(DYNLIB)
+	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/server.o $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lserver $(CRYPTOGRAPHY_COMPILATION_OPTION) $(DYNLIB)
 
 client.o: client.c client.h $(COMMON_DEPENDENCIES)
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@ $(DYNLIB)
@@ -51,6 +53,9 @@ $(TARGET_FOLDER)/server_message_management.o: message_management/server_message_
 
 $(TARGET_FOLDER)/common_message_management.o: message_management/common_message_management.c message_management/common_message_management.h constants.h
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TARGET_FOLDER)/rsa_manager.o: rsa/rsa_manager.c
+	$(CC) $(CFLAGS) -c $< -o $@ -L/usr/lib -lcrypto -lssl
 
 $(TARGET_FOLDER)/rsa.o: rsa/rsa.c
 	$(CC) $(CFLAGS) -c $< -o $@ -L/usr/lib -lcrypto -lssl

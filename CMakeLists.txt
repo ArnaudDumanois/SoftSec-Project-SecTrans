@@ -34,4 +34,6 @@ add_executable(SoftSec_Project_SecTrans
         message_management/common_message_management.c
         message_management/common_message_management.h
         rsa/rsa.c
+        rsa/rsa_manager.c
+        rsa/rsa_manager.h
 )
