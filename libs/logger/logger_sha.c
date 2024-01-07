@@ -52,7 +52,7 @@ int save_user(const char *usrname, const char *passwd) {
     generate_salt(new_user->password_salt);
     hash_generator(passwd, new_user->password_salt, new_user->hashed_password);
 
-    if (write(file_descriptor, new_user, sizeof(User)) != sizeof(User)) { <- ça c'est carrément foireux
+    if (write(file_descriptor, new_user, sizeof(User))==-1) {
         perror("Erreur lors de l'écriture de l'utilisateur dans le fichier");
         close(file_descriptor);
         return INTERNAL_ERROR;
@@ -86,18 +86,17 @@ int authenticate_user(const char *username, const char *password) {
     ssize_t read_result;
     int authentication_result = AUTH_ERROR;  // Par défaut, l'authentification échoue
 
-    while ((read_result = read(file_descriptor, &user, sizeof(User))) == sizeof(User)) {
-        if (strcmp(user.username, username) == 0) {
+    while ((read_result = read(file_descriptor, &user, sizeof(User)))) {
+        if (compare(user.username, username) == 0) {
             printf("USERNAME SAME !\n");
             char hashed_password[MAX_PASSWORD_LENGTH];
             hash_generator(password, user.password_salt, hashed_password);
 
-            printf("passwd salt:\n\n");
-            printf("%s", user.password_salt);
+            printf("passwd_inside:\n%s\n",user.hashed_password);
+            printf("generate passwd:\n%s\n",hashed_password);
 
-            if (strcmp(hashed_password, user.hashed_password) == 0) {
+            if (compare(hashed_password, user.hashed_password) == 0) {
                 authentication_result = AUTH_DONE; // Authentification réussie
-
                 char *folder_name = malloc(sizeof(user.username) + sizeof(user.hashed_password));
                 strcat(folder_name, user.username);
                 strcat(folder_name, user.hashed_password);
@@ -132,8 +131,9 @@ int user_exists(const char *username) {
     ssize_t read_result;
     int result = USER_NOT_EXIST;  // Par défaut, l'utilisateur n'existe pas
 
-    while ((read_result = read(file_descriptor, &user, sizeof(User))) == sizeof(User)) {
-        if (strcmp(user.username, username) == 0) {
+    while ((read_result = read(file_descriptor, &user, sizeof(User)))) {
+        print_user(&user);
+        if (compare(user.username, username) == 0) {
             result = USER_ALREADY_EXIST;
             break;  // Utilisateur trouvé
         }
@@ -146,5 +146,35 @@ int user_exists(const char *username) {
 
     close(file_descriptor);
     return result;
+}
+
+// Comparing both the strings.
+int compare(const char a[],const char b[])
+{
+    int a_len = strlen(a);
+    int b_len = strlen(b);
+    int min = a_len>b_len ? b_len: a_len;
+    printf("minimum: %d",min);
+
+    int flag=0;  // integer variables declaration
+    for(int i=0;i<min;i++)  // while loop
+    {
+        printf("ANALYSE ENTRE :\n%c | %c\n",a[i],b[i]);
+        if(a[i]!=b[i]){
+            flag=1;
+            break;
+        }
+    }
+
+    printf("***END CMP***\n");
+    if(flag==0)
+        return 0;
+    else
+        return 1;
+}
+
+void print_user(User *user){
+    printf("USER : %s\n",user->username);
+    printf("PASSWD : %s\n\n",user->hashed_password);
 }
 
