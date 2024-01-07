@@ -2,7 +2,7 @@
 #include "constants.h"
 #include "server.h"
 #include "message_management/server_message_management/server_message_management.h"
-#include "rsa/rsa.h"
+#include "rsa/rsa_manager.h"
 #include <string.h>
 
 int main() {
@@ -12,66 +12,25 @@ int main() {
 
     // Traitement des connexions (exemple : attente d'un message)
     char message[INPUT_SIZE];
-    RSA *keyPair = generateRSAKeyPair();
-    if (keyPair == NULL) {
-        fprintf(stderr, "Error generating RSA key pair\n");
-        return 1;
-    }
+    RSA *keyPair = generate_RSA_keys();
+    char *test = "Julien est un BG sans fin";
+    char *encrypted_msg;
+    int res = encrypt_message(test, keyPair, &encrypted_msg);
+    printf("res encrypt : %d\n", res);
+    printf("Original Message: %s\n", test);
+    printf("Encrypted Message: %s\n", encrypted_msg);
 
-    // Get the public key string
-    char *publicKeyStr = getPublicKeyStr(keyPair);
-    if (publicKeyStr == NULL) {
-        fprintf(stderr, "Error getting public key string\n");
-        RSA_free(keyPair);
-        return 1;
-    }
+    char *decrypted_msg;
+    decrypt_message(encrypted_msg, keyPair, &decrypted_msg);
 
-    // Print the public key string
-    printf("Public Key:\n%s\n", publicKeyStr);
-
-    // Read the public key from the string
-    RSA *readPublicKey = readPublicKeyFromStr(publicKeyStr);
-    if (readPublicKey == NULL) {
-        fprintf(stderr, "Error reading public key from string\n");
-        RSA_free(keyPair);
-        free(publicKeyStr);
-        return 1;
-    }
-
-    // Encrypt and decrypt a message
-    const char *originalMessage = "Hello, RSA!";
-    char *encryptedMessage;
-    int encryptResult = encryptMessage(originalMessage, readPublicKey, &encryptedMessage);
-    if (encryptResult == -1) {
-        fprintf(stderr, "Error encrypting message\n");
-        RSA_free(keyPair);
-        RSA_free(readPublicKey);
-        free(publicKeyStr);
-        return 1;
-    }
-
-    char *decryptedMessage;
-    int decryptResult = decryptMessage(encryptedMessage, keyPair, &decryptedMessage);
-    if (decryptResult == -1) {
-        fprintf(stderr, "Error decrypting message\n");
-        RSA_free(keyPair);
-        RSA_free(readPublicKey);
-        free(publicKeyStr);
-        free(encryptedMessage);
-        return 1;
-    }
-
-    // Print the results
-    printf("Original Message: %s\n", originalMessage);
-    printf("Encrypted Message: %s\n", encryptedMessage);
-    printf("Decrypted Message: %s\n", decryptedMessage);
+    printf("Decrypted Message: %s\n", decrypted_msg);
 
     // Free allocated memory
-    RSA_free(keyPair);
+    /*RSA_free(keyPair);
     RSA_free(readPublicKey);
     free(publicKeyStr);
     free(encryptedMessage);
-    free(decryptedMessage);
+    free(decryptedMessage);*/
     listen_message(message);
 
     // Arrêt du serveur

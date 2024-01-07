@@ -1,8 +1,12 @@
 #ifndef SOFTSEC_PROJECT_SECTRANS_RSA_MANAGER_H
 #define SOFTSEC_PROJECT_SECTRANS_RSA_MANAGER_H
 
-char *get_ciphertext_from_plaintext(char *plaintext, int length_plaintext, char *public_key);
+#include "rsa.h"
 
-char *get_plaintext_from_ciphertext(char *ciphertext, int length_ciphertext, char *private_key);
+RSA *generate_RSA_keys();
+
+int encrypt_message(char *msg_to_encrypt, RSA *keys, char **encrypted_msg);
+
+int decrypt_message(char *encrypted_msg, RSA *keys, char **plain_text_msg);
 
 #endif //SOFTSEC_PROJECT_SECTRANS_RSA_MANAGER_H

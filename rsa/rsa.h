@@ -4,13 +4,14 @@
 #include <openssl/ssl.h>
 #include <openssl/rsa.h>
 
-RSA *generateRSAKeyPair();
+RSA *generate_rsa_keys();
 
+int encrypt(const char *plainText, RSA *publicKey, char **encryptedText);
 
-int encryptMessage(const char *plainText, RSA *publicKey, char **encryptedText);
+int decrypt(const char *encryptedText, RSA *privateKey, char **decryptedText);
 
-int decryptMessage(const char *encryptedText, RSA *privateKey, char **decryptedText);
-RSA *readPublicKeyFromStr(const char *keyStr);
-char *getPublicKeyStr(RSA *rsa);
+RSA *read_public_key_from_string(const char *keyStr);
+
+char *get_public_key_in_string(RSA *rsa);
 
 #endif //SOFTSEC_PROJECT_SECTRANS_RSA_H

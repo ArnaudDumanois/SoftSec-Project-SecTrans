@@ -4,17 +4,17 @@
 #include <stdlib.h>
 #include <openssl/err.h>
 
-#define KEY_LENGTH  1024
+#define KEY_LENGTH  2048
 #define PUB_EXP     65537
 
-RSA *generateRSAKeyPair() {
+RSA *generate_rsa_keys() {
     RSA *rsa = NULL;
     BIGNUM *bne = NULL;
 
     int bits = KEY_LENGTH; // Adjust the key size as needed
 
     bne = BN_new();
-    BN_set_word(bne, RSA_F4);
+    BN_set_word(bne, PUB_EXP);
 
     rsa = RSA_new();
     RSA_generate_key_ex(rsa, bits, bne, NULL);
@@ -23,9 +23,9 @@ RSA *generateRSAKeyPair() {
     return rsa;
 }
 
-// Function to encrypt a message using RSA public key
-int encryptMessage(const char *plainText, RSA *publicKey, char **encryptedText) {
+int encrypt(const char *plainText, RSA *publicKey, char **encryptedText) {
     int rsaSize = RSA_size(publicKey);
+    printf("size public : %d\n", rsaSize);
     *encryptedText = (char *) malloc(rsaSize);
 
     int result = RSA_public_encrypt(strlen(plainText), (const unsigned char *) plainText,
@@ -34,9 +34,9 @@ int encryptMessage(const char *plainText, RSA *publicKey, char **encryptedText) 
     return result;
 }
 
-// Function to decrypt a message using RSA private key
-int decryptMessage(const char *encryptedText, RSA *privateKey, char **decryptedText) {
+int decrypt(const char *encryptedText, RSA *privateKey, char **decryptedText) {
     int rsaSize = RSA_size(privateKey);
+    printf("size private : %d\n", rsaSize);
     *decryptedText = (char *) malloc(rsaSize);
 
     int result = RSA_private_decrypt(rsaSize, (const unsigned char *) encryptedText, (unsigned char *) *decryptedText,
@@ -45,7 +45,7 @@ int decryptMessage(const char *encryptedText, RSA *privateKey, char **decryptedT
     return result;
 }
 
-RSA *readPublicKeyFromStr(const char *keyStr) {
+RSA *read_public_key_from_string(const char *keyStr) {
     BIO *bio = BIO_new_mem_buf(keyStr, -1);
     if (bio == NULL) {
         perror("Error creating BIO");
@@ -63,7 +63,7 @@ RSA *readPublicKeyFromStr(const char *keyStr) {
     return rsa;
 }
 
-char *getPublicKeyStr(RSA *rsa) {
+char *get_public_key_in_string(RSA *rsa) {
     BIO *bio = BIO_new(BIO_s_mem());
     if (bio == NULL) {
         perror("Error creating BIO");
@@ -91,33 +91,5 @@ char *getPublicKeyStr(RSA *rsa) {
 
     BIO_free(bio);
     return result;
-}
-
-int encrypt(const unsigned char *plaintext, int plaintextLen, RSA *publicKey, unsigned char *ciphertext) {
-    int flag = RSA_PKCS1_OAEP_PADDING;
-    int encryptedLen = RSA_public_encrypt(plaintextLen, plaintext, ciphertext, publicKey, flag);
-
-    if (encryptedLen == -1) {
-        exit(EXIT_FAILURE);
-    }
-
-    return encryptedLen;
-}
-
-int decrypt(const unsigned char *ciphertext, int ciphertextLen, RSA *privateKey, unsigned char *plaintext) {
-    int flag = RSA_PKCS1_OAEP_PADDING;
-    int decryptedLen = RSA_private_decrypt(ciphertextLen, ciphertext, plaintext, privateKey, flag);
-
-    if (decryptedLen == -1) {
-        unsigned long err;
-        while ((err = ERR_get_error()) != 0) {
-            char *err_string = ERR_error_string(err, NULL);
-            fprintf(stderr, "OpenSSL Error: %s\n", err_string);
-        }
-        printf("error during RSA decryption\n");
-        exit(EXIT_FAILURE);
-    }
-
-    return decryptedLen;
 }
 
