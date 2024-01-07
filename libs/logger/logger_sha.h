@@ -41,5 +41,7 @@ void hash_generator(const char *input, const char *salt, char *hashed_output);
 int save_user(const char* usrname,const char* passwd);
 int authenticate_user(const char *username, const char *password);
 int user_exists(const char *username);
+int compare(const char a[],const char b[]);
+void print_user(User *user);
 
 #endif //SOFTSEC_PROJECT_SECTRANS_LOGGER_SHA_H
