@@ -2,7 +2,8 @@
 #define SOFTSEC_PROJECT_SECTRANS_BOOL_TYPE_H
 
 typedef enum {
-    FALSE=0, TRUE
+    FALSE=0,
+    TRUE=1
 } boolean;
 
 #endif //SOFTSEC_PROJECT_SECTRANS_BOOL_TYPE_H

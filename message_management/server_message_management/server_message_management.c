@@ -8,6 +8,7 @@
 #include "../../server.h"
 #include <dirent.h>
 #include <unistd.h>
+#include <regex.h>
 #include "../common_message_management.h"
 #include "../../libs/logger/logger_sha.h"
 
@@ -46,6 +47,18 @@ void sendingResponse(char *action,int res){
     client_sendResponse(action,res,CLIENT_PORT);
 }
 
+boolean is_correctusername(char *usrname) {
+    regex_t regex;
+    if ((regcomp(&regex, "^[0-9a-zA-Z]+$",REG_EXTENDED)) == 0) {
+        int result = regexec(&regex, usrname, 0, NULL, 0);
+        regfree(&regex);
+        return result == 0 ? TRUE : FALSE;
+    } else {
+        printf("Problème interne sur le traitement du formattage\n");
+    }
+    return FALSE;
+}
+
 int manage_request(char message[MESSAGE_SIZE]) {
     printf("MANAGE REQUEST\n");
     char *action = malloc(total_size_between_semicolons(message,0)+1);
@@ -73,18 +86,28 @@ int manage_request(char message[MESSAGE_SIZE]) {
         clear_array(message, MESSAGE_SIZE);
     }
     else if (strcmp(action,ACTION_LOGIN)==0) {
-        size_t size_usrname = total_size_between_semicolons(message,1)+1;
-        char *usrname = malloc(size_usrname);
-        extract_between_semicolons_at_index(message,1,usrname,size_usrname);
-
-        size_t size_passwd = total_size_between_semicolons(message,2)+1;
-        char *passwd = malloc(size_passwd);
-        extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
-
-        int res = authenticate_user(usrname,passwd);
-
-        if (res == 1) { printf("Auth Réussie\n"); }
-        else { printf("Auth échouée\n"); }
+        printf("LOGIN ACTION !\n");
+        int res;
+        size_t username_size = total_size_between_semicolons(message,1);
+        if(username_size>(size_t)MAX_USERNAME_LENGTH){res=ERROR_USERNAME_TOO_LONG;printf("USERNAME TOO LONG !\n");}
+        else{
+            char *usrname = malloc(username_size+1);
+            extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
+            if(is_correctusername(usrname)==FALSE){res=ERROR_BAD_USERNAME_INPUT;printf("BAD USERNAME\n");free(usrname);}
+            else{
+                size_t passwd_size = total_size_between_semicolons(message,2);
+                if(passwd_size>(size_t)MAX_PASSWORD_LENGTH){res=ERROR_PASSWORD_TOO_LONG;printf("PASSWORD TOO LONG !\n");free(usrname);}
+                else{
+                    char *passwd = malloc(passwd_size+1);
+                    extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
+                    res = authenticate_user(usrname,passwd);
+                    free(passwd);
+                    free(usrname);
+                    if (res == AUTH_DONE) { printf("User login !\n"); }
+                    else { printf("Error during user login !\n"); }
+                }
+            }
+        }
         sendingResponse(action,res);
     }
     else if (strcmp(action,ACTION_REGISTER)==0){
@@ -95,16 +118,19 @@ int manage_request(char message[MESSAGE_SIZE]) {
         else{
             char *usrname = malloc(username_size+1);
             extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
-            size_t passwd_size = total_size_between_semicolons(message,2);
-            if(passwd_size>(size_t)MAX_PASSWORD_LENGTH){res=ERROR_PASSWORD_TOO_LONG;printf("PASSWORD TOO LONG !\n");free(usrname);}
+            if(is_correctusername(usrname)==FALSE){res=ERROR_BAD_USERNAME_INPUT;printf("BAD USERNAME\n");free(usrname);}
             else{
-                char *passwd = malloc(passwd_size+1);
-                extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
-                res = save_user(usrname,passwd);
-                free(passwd);
-                free(usrname);
-                if (res == 1) { printf("User registered !\n"); }
-                else { printf("Error during user registered !\n"); }
+                size_t passwd_size = total_size_between_semicolons(message,2);
+                if(passwd_size>(size_t)MAX_PASSWORD_LENGTH){res=ERROR_PASSWORD_TOO_LONG;printf("PASSWORD TOO LONG !\n");free(usrname);}
+                else{
+                    char *passwd = malloc(passwd_size+1);
+                    extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
+                    res = save_user(usrname,passwd);
+                    free(passwd);
+                    free(usrname);
+                    if (res == 1) { printf("User registered !\n"); }
+                    else { printf("Error during user registered !\n"); }
+                }
             }
         }
         sendingResponse(action,res);
