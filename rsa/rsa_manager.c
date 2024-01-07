@@ -1,7 +1,7 @@
 #include "rsa.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+/*
 char *get_ciphertext_from_plaintext(char *plaintext, int length_plaintext, RSA *public_key) {
     int public_key_size = RSA_size(public_key);
     char *ciphertext = malloc(public_key_size + 1);
@@ -24,4 +24,4 @@ char *get_plaintext_from_ciphertext(char *ciphertext, int length_ciphertext, cha
     }
     plaintext[private_key_size] = '\0';
     return plaintext;
-}
+}*/

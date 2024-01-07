@@ -2,58 +2,99 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <openssl/err.h>
 
 #define KEY_LENGTH  1024
 #define PUB_EXP     65537
 
-void generate_keys(char **private_key, char **public_key) {
-    // Générer une nouvelle paire de clés RSA de 1024 bits
-    RSA *keypair = RSA_new();
-    BIGNUM *e = BN_new();
-    BN_set_word(e, PUB_EXP);
+RSA *generateRSAKeyPair() {
+    RSA *rsa = NULL;
+    BIGNUM *bne = NULL;
 
-    if (RSA_generate_key_ex(keypair, KEY_LENGTH, e, NULL) != 1) {
-        fprintf(stderr, "Erreur lors de la génération de la paire de clés RSA.\n");
-        RSA_free(keypair);
-        BN_free(e);
-        EVP_cleanup();
-        exit(EXIT_FAILURE);
+    int bits = KEY_LENGTH; // Adjust the key size as needed
+
+    bne = BN_new();
+    BN_set_word(bne, RSA_F4);
+
+    rsa = RSA_new();
+    RSA_generate_key_ex(rsa, bits, bne, NULL);
+
+    BN_free(bne);
+    return rsa;
+}
+
+// Function to encrypt a message using RSA public key
+int encryptMessage(const char *plainText, RSA *publicKey, char **encryptedText) {
+    int rsaSize = RSA_size(publicKey);
+    *encryptedText = (char *) malloc(rsaSize);
+
+    int result = RSA_public_encrypt(strlen(plainText), (const unsigned char *) plainText,
+                                    (unsigned char *) *encryptedText, publicKey, RSA_PKCS1_OAEP_PADDING);
+
+    return result;
+}
+
+// Function to decrypt a message using RSA private key
+int decryptMessage(const char *encryptedText, RSA *privateKey, char **decryptedText) {
+    int rsaSize = RSA_size(privateKey);
+    *decryptedText = (char *) malloc(rsaSize);
+
+    int result = RSA_private_decrypt(rsaSize, (const unsigned char *) encryptedText, (unsigned char *) *decryptedText,
+                                     privateKey, RSA_PKCS1_OAEP_PADDING);
+
+    return result;
+}
+
+RSA *readPublicKeyFromStr(const char *keyStr) {
+    BIO *bio = BIO_new_mem_buf(keyStr, -1);
+    if (bio == NULL) {
+        perror("Error creating BIO");
+        return NULL;
     }
 
-    // Utiliser les objets BIO pour stocker les clés
-    BIO *pri_bio = BIO_new(BIO_s_mem());
-    BIO *pub_bio = BIO_new(BIO_s_mem());
+    RSA *rsa = PEM_read_bio_RSA_PUBKEY(bio, NULL, NULL, NULL);
+    if (rsa == NULL) {
+        perror("Error reading public key from string");
+        BIO_free(bio);
+        return NULL;
+    }
 
-    PEM_write_bio_RSAPrivateKey(pri_bio, keypair, NULL, NULL, 0, NULL, NULL);
-    PEM_write_bio_RSAPublicKey(pub_bio, keypair);
+    BIO_free(bio);
+    return rsa;
+}
 
-    // Obtenir la longueur des clés
-    size_t pri_len = BIO_pending(pri_bio);
-    size_t pub_len = BIO_pending(pub_bio);
+char *getPublicKeyStr(RSA *rsa) {
+    BIO *bio = BIO_new(BIO_s_mem());
+    if (bio == NULL) {
+        perror("Error creating BIO");
+        return NULL;
+    }
 
-    // Allouer de la mémoire pour les clés
-    *private_key = (char *) malloc(pri_len + 1);
-    *public_key = (char *) malloc(pub_len + 1);
+    if (PEM_write_bio_RSA_PUBKEY(bio, rsa) != 1) {
+        perror("Error writing public key to BIO");
+        BIO_free(bio);
+        return NULL;
+    }
 
-    // Lire les clés depuis les objets BIO
-    BIO_read(pri_bio, *private_key, pri_len);
-    BIO_read(pub_bio, *public_key, pub_len);
+    char *buffer;
+    long length = BIO_get_mem_data(bio, &buffer);
 
-    // Ajouter un caractère nul à la fin des clés pour les rendre des chaînes C valides
-    (*private_key)[pri_len] = '\0';
-    (*public_key)[pub_len] = '\0';
+    char *result = malloc(length + 1);
+    if (result == NULL) {
+        perror("Error allocating memory for public key string");
+        BIO_free(bio);
+        return NULL;
+    }
 
-    // Libérer la mémoire allouée pour la paire de clés
-    RSA_free(keypair);
-    BN_free(e);
+    memcpy(result, buffer, length);
+    result[length] = '\0';
 
-    // Libérer les objets BIO
-    BIO_free_all(pri_bio);
-    BIO_free_all(pub_bio);
+    BIO_free(bio);
+    return result;
 }
 
 int encrypt(const unsigned char *plaintext, int plaintextLen, RSA *publicKey, unsigned char *ciphertext) {
-    int flag = RSA_SSLV23_PADDING;
+    int flag = RSA_PKCS1_OAEP_PADDING;
     int encryptedLen = RSA_public_encrypt(plaintextLen, plaintext, ciphertext, publicKey, flag);
 
     if (encryptedLen == -1) {
@@ -63,68 +104,20 @@ int encrypt(const unsigned char *plaintext, int plaintextLen, RSA *publicKey, un
     return encryptedLen;
 }
 
-int decrypt(const unsigned char* ciphertext, int ciphertextLen, RSA* privateKey, unsigned char* plaintext) {
-    int flag = RSA_SSLV23_PADDING;
+int decrypt(const unsigned char *ciphertext, int ciphertextLen, RSA *privateKey, unsigned char *plaintext) {
+    int flag = RSA_PKCS1_OAEP_PADDING;
     int decryptedLen = RSA_private_decrypt(ciphertextLen, ciphertext, plaintext, privateKey, flag);
 
     if (decryptedLen == -1) {
+        unsigned long err;
+        while ((err = ERR_get_error()) != 0) {
+            char *err_string = ERR_error_string(err, NULL);
+            fprintf(stderr, "OpenSSL Error: %s\n", err_string);
+        }
+        printf("error during RSA decryption\n");
         exit(EXIT_FAILURE);
     }
 
     return decryptedLen;
 }
-
-/*
-    RSA_free(publicKey);
-
-    RSA_free(privateKey);
- */
-
-/*unsigned char *encrypt(unsigned char *src, unsigned int len, int *length) {
-    FILE *fp = fopen("public.txt", "r");
-    if (fp == NULL) {
-        perror("file error");
-        return NULL;
-    }
-    EVP_PKEY *pkey;
-    pkey = PEM_read_PUBKEY(fp, NULL, NULL, NULL);
-    fclose(fp);
-    if (pkey == NULL) {
-        fprintf(stderr, "error: read publics key\n");
-        return NULL;
-    }
-    EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, NULL);
-    EVP_PKEY_encrypt_init(ctx);
-    unsigned char *dst = (unsigned char *) malloc(2048);
-    size_t outl;
-    if (!EVP_PKEY_encrypt(ctx, dst, &outl, src, (size_t) len)) {
-        fprintf(stderr, "error: encrypt\n");
-        EVP_PKEY_free(pkey);
-        free(dst);
-        return NULL;
-    }
-    int len2 = outl;
-    EVP_PKEY_free(pkey);
-    EVP_PKEY_CTX_free(ctx);
-    if (length != NULL) {
-        *length = len2;
-    }
-    return dst;
-}
-
-int encrypt(unsigned char *data, int data_len, unsigned char *key, unsigned char *encrypted) {
-    int padding = RSA_PKCS1_PADDING;
-    RSA *rsa = createRSA(key, 1);
-    int result = RSA_public_encrypt(data_len, data, encrypted, rsa, padding);
-    return result;
-}
-
-int decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted)
-{
-    int padding = RSA_PKCS1_PADDING;
-    RSA * rsa;
-            int i = createRSA(key,0);
-    int  result = RSA_private_decrypt(data_len,enc_data,decrypted,rsa,padding);
-    return result;
-}*/
 
