@@ -58,7 +58,7 @@ int save_user(const char *usrname, const char *passwd) {
         return INTERNAL_ERROR;
     }
 
-    printf("passwd salt: %s\n", new_user->password_salt);
+    //printf("passwd salt: %s\n", new_user->password_salt);
 
     //Le compté est créé
     //on créé un dossier
@@ -132,7 +132,7 @@ int user_exists(const char *username) {
     int result = USER_NOT_EXIST;  // Par défaut, l'utilisateur n'existe pas
 
     while ((read_result = read(file_descriptor, &user, sizeof(User)))) {
-        print_user(&user);
+        //print_user(&user);
         if (compare(user.username, username) == 0) {
             result = USER_ALREADY_EXIST;
             break;  // Utilisateur trouvé

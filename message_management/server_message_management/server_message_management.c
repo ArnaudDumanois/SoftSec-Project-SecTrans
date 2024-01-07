@@ -8,8 +8,12 @@
 #include "../../server.h"
 #include <dirent.h>
 #include <unistd.h>
+#include <regex.h>
+#include <stdbool.h>
 #include "../common_message_management.h"
 #include "../../libs/logger/logger_sha.h"
+
+boolean is_email(char *usrname);
 
 void list_files(char msg_to_send[MESSAGE_SIZE]) { // TODO : to finish
     DIR *d;
@@ -95,6 +99,10 @@ int manage_request(char message[MESSAGE_SIZE]) {
         else{
             char *usrname = malloc(username_size+1);
             extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
+
+            if(is_email(usrname)){printf("CORRECT EMAIL\n");}
+            else{ printf("BAD EMAIL !\n");return -99;}
+
             size_t passwd_size = total_size_between_semicolons(message,2);
             if(passwd_size>(size_t)MAX_PASSWORD_LENGTH){res=ERROR_PASSWORD_TOO_LONG;printf("PASSWORD TOO LONG !\n");free(usrname);}
             else{
@@ -116,6 +124,18 @@ int manage_request(char message[MESSAGE_SIZE]) {
         return (int) strtol(res, NULL, 10);
     }
     return -99;
+}
+
+boolean is_email(char *usrname) {
+    regex_t regex;
+    if ((regcomp(&regex, "[:alnum:]+\\@[:alnum:]+",REG_EXTENDED)) == 0) {
+        int result = regexec(&regex, usrname, 0, NULL, 0);
+        regfree(&regex);
+        return result == 0 ? true : false;
+    } else {
+        printf("Problème interne sur le traitement du formattage\n");
+    }
+    return 0;
 }
 
 int listen_message(char message[MESSAGE_SIZE]) {
