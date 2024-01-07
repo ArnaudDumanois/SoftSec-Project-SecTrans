@@ -11,11 +11,15 @@
 #include <openssl/rand.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <dirent.h>
 
 #define MAX_USERNAME_LENGTH 50
 #define MAX_PASSWORD_LENGTH 64
 #define SALT_SIZE 16
 #define USERS_DB_FILE "users.db"
+
+void createUserFolder(User *user);
 
 void generate_salt(char *salt) {
     if (RAND_bytes((unsigned char *) salt, SALT_SIZE) != 1) {
@@ -58,23 +62,35 @@ int save_user(const char *usrname, const char *passwd) {
         return INTERNAL_ERROR;
     }
 
-    printf("passwd salt: %s\n", new_user->password_salt);
-
     //Le compté est créé
     //on créé un dossier
-    char *folder_name = malloc(sizeof(new_user->username) + sizeof(new_user->hashed_password));
-    strcat(folder_name, new_user->username);
-    strcat(folder_name, new_user->hashed_password);
-    generate_salt(new_user->global_salt);
-    char *folder_hashedname = malloc(sizeof(folder_name));
-    hash_generator(folder_name, new_user->global_salt, folder_hashedname);
-    //printf("REGISTER FOLDER HASHED NAME : %s\n",folder_hashedname);
+    createUserFolder(new_user);
+
     close(file_descriptor);
     free(new_user);
     return REGISTRATION_DONE;
 }
 
+void createUserFolder(User *user) {
+    char *folder_name = malloc(sizeof(user->username));
+    strcat(folder_name, user->username);
+    generate_salt(user->global_salt);
+    char *folder_hashedname = malloc(sizeof(folder_name));
+    hash_generator(folder_name, user->global_salt, folder_hashedname);
+    printf("REGISTER FOLDER HASHED NAME : %s\n",folder_hashedname);
+
+    struct stat st = {0};
+    if (stat(ROOT_USERS_FOLDER, &st) == -1) {mkdir(ROOT_USERS_FOLDER, 0755);}
+    char *final_path = malloc(sizeof(ROOT_USERS_FOLDER)+ sizeof(folder_hashedname));
+    strcat(final_path,ROOT_USERS_FOLDER);
+    strcat(final_path,"/");
+    strcat(final_path,folder_hashedname);
+    printf("FINAL PATH = %s\n",final_path);
+    if (stat(final_path, &st) == -1) {mkdir(final_path, 0755);}
+}
+
 int authenticate_user(const char *username, const char *password) {
+    printf("AUTH USER !\n");
     int file_descriptor = open(USERS_DB_FILE, O_RDONLY);
 
     if (file_descriptor == -1) {
@@ -87,7 +103,7 @@ int authenticate_user(const char *username, const char *password) {
     int authentication_result = AUTH_ERROR;  // Par défaut, l'authentification échoue
 
     while ((read_result = read(file_descriptor, &user, sizeof(User)))) {
-        if (compare(user.username, username) == 0) {
+        if (compare(user.username, username)==TRUE) {
             printf("USERNAME SAME !\n");
             char hashed_password[MAX_PASSWORD_LENGTH];
             hash_generator(password, user.password_salt, hashed_password);
@@ -95,24 +111,30 @@ int authenticate_user(const char *username, const char *password) {
             printf("passwd_inside:\n%s\n",user.hashed_password);
             printf("generate passwd:\n%s\n",hashed_password);
 
-            if (compare(hashed_password, user.hashed_password) == 0) {
+            if(compare(hashed_password, user.hashed_password)==TRUE) {
+                printf("AUTH DONE !\n");
                 authentication_result = AUTH_DONE; // Authentification réussie
-                char *folder_name = malloc(sizeof(user.username) + sizeof(user.hashed_password));
+                char *folder_name = malloc(sizeof(user.username));
                 strcat(folder_name, user.username);
-                strcat(folder_name, user.hashed_password);
-                generate_salt(user.global_salt);
-                char *folder_hashedname = malloc(sizeof(user.username) + sizeof(user.hashed_password));
+                char *folder_hashedname = malloc(sizeof(user.username));
                 hash_generator(folder_name, user.global_salt, folder_hashedname);
-                //printf("LOGIN FOLDER HASHED NAME : %s\n",folder_hashedname);
+                printf("LOGIN FOLDER HASHED NAME : %s\n",folder_hashedname);
+                char *final_user_path = malloc(sizeof(ROOT_USERS_FOLDER)+ sizeof(folder_hashedname));
+                strcat(final_user_path,ROOT_USERS_FOLDER);
+                strcat(final_user_path,"/");
+                strcat(final_user_path,folder_hashedname);
+                DIR *user_dir = opendir(final_user_path);
+                struct dirent *dirp;
+                while ((dirp = readdir(user_dir)) != NULL) printf("%s\n", dirp->d_name);
             }
-
-            break; // Utilisateur trouvé, que le mot de passe soit correct ou non
+            else{
+                printf("AUTH ECHOUEE ! \n");
+            }
         }
     }
 
-    if (read_result == -1) {
-        perror("Erreur lors de la lecture du fichier des utilisateurs");
-        return INTERNAL_ERROR;
+    if(read_result==-1){
+
     }
 
     close(file_descriptor);
@@ -132,8 +154,8 @@ int user_exists(const char *username) {
     int result = USER_NOT_EXIST;  // Par défaut, l'utilisateur n'existe pas
 
     while ((read_result = read(file_descriptor, &user, sizeof(User)))) {
-        print_user(&user);
-        if (compare(user.username, username) == 0) {
+        //print_user(&user);
+        if (compare(user.username, username) == TRUE) {
             result = USER_ALREADY_EXIST;
             break;  // Utilisateur trouvé
         }
@@ -148,29 +170,21 @@ int user_exists(const char *username) {
     return result;
 }
 
-// Comparing both the strings.
-int compare(const char a[],const char b[])
+//HYPOTESE : INPUT PARFAITES -> QUE DES charactères [0-9a-zA-Z]
+boolean compare(const char a[],const char b[])
 {
-    int a_len = strlen(a);
-    int b_len = strlen(b);
-    int min = a_len>b_len ? b_len: a_len;
-    printf("minimum: %d",min);
-
-    int flag=0;  // integer variables declaration
-    for(int i=0;i<min;i++)  // while loop
+    if(strlen(a)!=strlen(b)){ printf("NOT SAME LENGTH !\n");return FALSE;}
+    boolean flag=TRUE,i=0;
+    while(a[i]!='\0' &&b[i]!='\0')
     {
-        printf("ANALYSE ENTRE :\n%c | %c\n",a[i],b[i]);
         if(a[i]!=b[i]){
-            flag=1;
+            flag=FALSE;
             break;
         }
+        i++;
     }
-
-    printf("***END CMP***\n");
-    if(flag==0)
-        return 0;
-    else
-        return 1;
+    printf("SAME COMPARAISON ?: %d\n",flag);
+    return flag;
 }
 
 void print_user(User *user){

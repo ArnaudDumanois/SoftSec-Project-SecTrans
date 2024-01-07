@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
                     else if(res==USER_ALREADY_EXIST){printf("Un compte existe déjà");}
                     else if(res==ERROR_PASSWORD_TOO_LONG){ printf("PASSWORD TOO LONG !\n");}
                     else if(res==ERROR_USERNAME_TOO_LONG){printf("USERNAME TOO LONG !\n");}
+                    else if(res==ERROR_BAD_USERNAME_INPUT){printf("USERNAME BAD INPUT !\n");}
                     else{printf(("REGISTRATION ERROR !"));}
                 }
             }
