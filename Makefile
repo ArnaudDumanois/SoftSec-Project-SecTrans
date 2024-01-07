@@ -9,7 +9,7 @@ COMMON_DEPENDENCIES_UTILS = $(TARGET_FOLDER)/util.o $(TARGET_FOLDER)/array_utils
 COMMON_DEPENDENCIES_LOAD_LIBRARIES = $(TARGET_FOLDER)/load_libraries_client.o $(TARGET_FOLDER)/load_libraries_server.o
 COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT = $(TARGET_FOLDER)/server_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/common_message_management.o
 COMMON_DEPENDENCIES_FILE_MANAGEMENT = $(TARGET_FOLDER)/file_management.o $(TARGET_FOLDER)/file_management_server.o
-COMMON_DEPENDENCIES_CRYPTOGRAPHY = $(TARGET_FOLDER)/rsa.o $(TARGET_FOLDER)/rsa_manager.o
+COMMON_DEPENDENCIES_CRYPTOGRAPHY = $(TARGET_FOLDER)/rsa.o $(TARGET_FOLDER)/rsa_manager.o $(TARGET_FOLDER)/aes_256_cbc.o $(TARGET_FOLDER)/aes_manager.o
 
 COMMON_DEPENDENCIES = $(COMMON_DEPENDENCIES_UTILS) $(COMMON_DEPENDENCIES_CRYPTOGRAPHY) $(COMMON_DEPENDENCIES_LOAD_LIBRARIES) $(COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT) $(COMMON_DEPENDENCIES_FILE_MANAGEMENT)
 
@@ -54,10 +54,16 @@ $(TARGET_FOLDER)/server_message_management.o: message_management/server_message_
 $(TARGET_FOLDER)/common_message_management.o: message_management/common_message_management.c message_management/common_message_management.h constants.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET_FOLDER)/rsa_manager.o: rsa/rsa_manager.c
+$(TARGET_FOLDER)/rsa_manager.o: rsa/rsa_manager.c $(TARGET_FOLDER)/rsa.o rsa/rsa_manager.h
 	$(CC) $(CFLAGS) -c $< -o $@ -L/usr/lib -lcrypto -lssl
 
-$(TARGET_FOLDER)/rsa.o: rsa/rsa.c
+$(TARGET_FOLDER)/rsa.o: rsa/rsa.c rsa/rsa.h
+	$(CC) $(CFLAGS) -c $< -o $@ -L/usr/lib -lcrypto -lssl
+
+$(TARGET_FOLDER)/aes_manager.o: aes/aes_manager.c $(TARGET_FOLDER)/aes_256_cbc.o
+	$(CC) $(CFLAGS) -c $< -o $@ -L/usr/lib -lcrypto -lssl
+
+$(TARGET_FOLDER)/aes_256_cbc.o: aes/aes_256_cbc.c aes/aes_manager.c
 	$(CC) $(CFLAGS) -c $< -o $@ -L/usr/lib -lcrypto -lssl
 
 %.o: %.c %.h

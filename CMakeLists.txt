@@ -36,4 +36,8 @@ add_executable(SoftSec_Project_SecTrans
         rsa/rsa.c
         rsa/rsa_manager.c
         rsa/rsa_manager.h
+        aes/aes_256_cbc.c
+        aes/aes_manager.c
+        aes/aes_256_cbc.h
+        aes/aes_manager.h
 )
