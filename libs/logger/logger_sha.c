@@ -1,9 +1,4 @@
-//
-// Created by Julien on 03/01/2024.
-//
-
 #include "logger_sha.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,6 +9,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include "../../base64/base64decode.h"
+#include "../../base64/base64encode.h"
 
 #define MAX_USERNAME_LENGTH 50
 #define MAX_PASSWORD_LENGTH 64
@@ -30,11 +27,17 @@ void generate_salt(char *salt) {
 }
 
 void hash_generator(const char *input, const char *salt, char *hashed_output) {
+    unsigned char hash[MAX_PASSWORD_LENGTH];
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
-    SHA256_Update(&sha256, salt, SALT_SIZE);
+    SHA256_Update(&sha256,salt,SALT_SIZE);
     SHA256_Update(&sha256, input, strlen(input));
-    SHA256_Final((unsigned char *) hashed_output, &sha256);
+    SHA256_Final(hash, &sha256);
+    for(int i = 0; i < MAX_PASSWORD_LENGTH; i++)
+    {
+        sprintf(hashed_output + (i * 2), "%02x", hash[i]);
+    }
+    hashed_output[64] = 0;
 }
 
 int save_user(const char *usrname, const char *passwd) {
@@ -109,30 +112,39 @@ int authenticate_user(const char *username, const char *password) {
             char hashed_password[MAX_PASSWORD_LENGTH];
             hash_generator(password, user.password_salt, hashed_password);
 
-            printf("passwd_inside:\n%s\n",user.hashed_password);
-            printf("generate passwd:\n%s\n",hashed_password);
+            //printf("passwd_inside:\n%s\n",user.hashed_password);
+            //printf("generate passwd:\n%s\n",hashed_password);
 
-            if(compare(hashed_password, user.hashed_password)==TRUE){
-
-            }
+            //compare(hashed_password, user.hashed_password)==TRUE
+            //CRYPTO_memcmp(hashed_password,user.hashed_password,MAX_PASSWORD_LENGTH)
             //memcmp(hashed_password,user.hashed_password, MAX_PASSWORD_LENGTH)==0
-            if(CRYPTO_memcmp(hashed_password,user.hashed_password,MAX_PASSWORD_LENGTH)) {
+
+            int max_size = b64_encoded_size(MAX_PASSWORD_LENGTH)+1;
+
+            int i=0;
+            while(1){
+                if(hashed_password[i]!=user.hashed_password[i]){printf("CHAR DIFFERENT : %c | %c au character : %d\n",hashed_password[i],user.hashed_password[i],i);break;}
+                i++;
+            }
+
+            char *final_curr_hash = b64_encode((const unsigned char*)hashed_password,b64_encoded_size(strlen(hashed_password)));
+            char *final_usr_hash = b64_encode((const unsigned char*)user.hashed_password,b64_encoded_size(strlen(user.hashed_password)));
+
+            printf("CURR_HASH: %s\n",final_curr_hash);
+            printf(" USR_HASH: %s\n",final_usr_hash);
+
+            i=0;
+            while(1){
+                if(final_curr_hash[i]!=final_usr_hash[i]){printf("CHAR DIFFERENT : %c | %c au character : %d\n",final_usr_hash[i],final_curr_hash[i],i);break;}
+                i++;
+            }
+
+            int res_cmp = strncmp(final_curr_hash,final_usr_hash,max_size);
+            printf("COMPARAISON ENTRE LES HASH : %d\n",res_cmp);
+
+            if(strncmp(final_curr_hash,final_usr_hash,max_size)==0) {
                 printf("AUTH DONE !\n");
                 authentication_result = AUTH_DONE; // Authentification réussie
-                /* PAS ENCORE POSSIBLE
-                char *folder_name = malloc(sizeof(user.username));
-                strcat(folder_name, user.username);
-                char *folder_hashedname = malloc(sizeof(user.username));
-                hash_generator(folder_name, user.global_salt, folder_hashedname);
-                printf("LOGIN FOLDER HASHED NAME : %s\n",folder_hashedname);
-                char *final_user_path = malloc(sizeof(ROOT_USERS_FOLDER)+ sizeof(folder_hashedname));
-                strcat(final_user_path,ROOT_USERS_FOLDER);
-                strcat(final_user_path,"/");
-                strcat(final_user_path,folder_hashedname);
-                DIR *user_dir = opendir(final_user_path);
-                struct dirent *dirp;
-                while ((dirp = readdir(user_dir)) != NULL) printf("%s\n", dirp->d_name);
-                 */
             }
             else{
                 printf("AUTH ECHOUEE ! \n");

@@ -7,6 +7,8 @@
 #include "../../utils/array_utils.h"
 #include "../server_message_management/server_message_management.h"
 #include "../common_message_management.h"
+#include "../../actions.h"
+#include "client_message_management.h"
 
 #define STILL 1
 #define END 0
@@ -26,7 +28,8 @@ int get_next_blocks_file(char **current_pointer_to_file_content, char msg_to_sen
     return *(*current_pointer_to_file_content) == '\0' ? END : STILL;
 }
 
-int get_current_msg_to_send(char **ptr_current_file_content, char msg_to_send[MESSAGE_SIZE], char filename[], char *action) {
+int get_current_msg_to_send(char **ptr_current_file_content, char msg_to_send[MESSAGE_SIZE], char filename[],
+                            char action) {
     add_action(msg_to_send, action);
     add_filename(msg_to_send, filename);
 
@@ -46,7 +49,8 @@ void sending(char msg_to_send[MESSAGE_SIZE], int port) {
     printf("MESSAGE SENT !\n");
 }
 
-int sending_common(char **ptr_current_file_content, char msg_to_send[MESSAGE_SIZE], char filename[], char *action, int port) {
+int sending_common(char **ptr_current_file_content, char msg_to_send[MESSAGE_SIZE], char filename[], char action,
+                   int port) {
     int result = get_current_msg_to_send(ptr_current_file_content, msg_to_send, filename, action);
     sending(msg_to_send, port);
     clear_array(msg_to_send, MESSAGE_SIZE);
@@ -101,33 +105,33 @@ void download_file(char filename[], int port) {
     listen_message(msg_to_send);
 }
 
-void add_login(char *msg_to_send,char *username, char *passwd) {
-    strcat(msg_to_send,username);
-    strcat(msg_to_send,";");
-    strcat(msg_to_send,passwd);
-    strcat(msg_to_send,";");
+void add_login(char *msg_to_send, char *username, char *passwd) {
+    strcat(msg_to_send, username);
+    strcat(msg_to_send, ";");
+    strcat(msg_to_send, passwd);
+    strcat(msg_to_send, ";");
 }
 
-void login(char *username, char *passwd, int port){
+void login(char *username, char *passwd, int port) {
     char *msg_to_send = malloc(MESSAGE_SIZE);
     if (msg_to_send == NULL) {
         fprintf(stderr, "Erreur d'allocation de mémoire.\n");
         exit(EXIT_FAILURE);
     }
-    add_action(msg_to_send,ACTION_LOGIN);
-    add_login(msg_to_send,username,passwd);
-    sending(msg_to_send,port);
+    add_action(msg_to_send, ACTION_LOGIN);
+    add_login(msg_to_send, username, passwd);
+    sending(msg_to_send, port);
 }
 
-void registration(char *username, char *passwd, int port){
+void registration(char *username, char *passwd, int port) {
     char *msg_to_send = malloc(MESSAGE_SIZE);
     if (msg_to_send == NULL) {
-    fprintf(stderr, "Erreur d'allocation de mémoire.\n");
-    exit(EXIT_FAILURE);
+        fprintf(stderr, "Erreur d'allocation de mémoire.\n");
+        exit(EXIT_FAILURE);
     }
-    add_action(msg_to_send,ACTION_REGISTER);
-    add_login(msg_to_send,username,passwd);
-    sending(msg_to_send,port);
+    add_action(msg_to_send, ACTION_REGISTER);
+    add_login(msg_to_send, username, passwd);
+    sending(msg_to_send, port);
     free(msg_to_send);
 }
 
@@ -136,28 +140,28 @@ void registration(char *username, char *passwd, int port){
  * RES;ACTION;RESULT;
  * */
 
-void client_sendResponse(char *action,int response, int port){
+void client_sendResponse(char action, int response, int port) {
     printf("BUILDING RESPONSE...\n");
     char *response_str = malloc(MESSAGE_SIZE);
-    memset(response_str,0, MESSAGE_SIZE);
+    memset(response_str, 0, MESSAGE_SIZE);
     if (response_str == NULL) {
         fprintf(stderr, "Erreur d'allocation de mémoire.\n");
         exit(EXIT_FAILURE);
     }
 
-    if(is_valid_action(action)!=1){
-        fprintf(stderr,"Aucune action en correspond à celle décrite !");
+    if (is_valid_action(action) != 1) {
+        fprintf(stderr, "Aucune action en correspond à celle décrite !");
         exit(EXIT_FAILURE);
     }
 
-    insert_between_semicolons(response_str, ACTION_REPONSE);
-    insert_between_semicolons(response_str, action);
+    add_action(response_str, ACTION_REPONSE);
+    add_action_at_index(response_str, action, 2);
     char *intConvert = malloc(sizeof(response));
     sprintf(intConvert, "%d", response);
     insert_between_semicolons(response_str, intConvert);
 
     //SYSTEME DE REPONSE A REVOIR
-    sending(response_str,port);
+    sending(response_str, port);
 }
 
 

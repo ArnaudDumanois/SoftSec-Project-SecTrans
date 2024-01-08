@@ -1,0 +1,8 @@
+#ifndef SOFTSEC_PROJECT_SECTRANS_CLIENT_CRYPTOMESSAGE_MANAGEMENT_H
+#define SOFTSEC_PROJECT_SECTRANS_CLIENT_CRYPTOMESSAGE_MANAGEMENT_H
+
+#include "../../../constants.h"
+
+void send_rsa_public_key(char msg_to_send[INPUT_SIZE], unsigned char *public_key);
+
+#endif //SOFTSEC_PROJECT_SECTRANS_CLIENT_CRYPTOMESSAGE_MANAGEMENT_H

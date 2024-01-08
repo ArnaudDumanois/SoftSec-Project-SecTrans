@@ -3,23 +3,27 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>
+#include "../actions.h"
 
-void add_action(char msg_to_send[MESSAGE_SIZE], char *action) {
-    size_t lenAction = strlen(action);
-    for(int i=0;i<lenAction;i++){msg_to_send[i]=action[i];}
-    msg_to_send[lenAction]=';';
+void add_action_at_index(char msg_to_send[MESSAGE_SIZE], char action, int index) {
+    msg_to_send[index] = action;
+    msg_to_send[index + 1] = ';';
+}
+
+void add_action(char msg_to_send[MESSAGE_SIZE], char action) {
+    add_action_at_index(msg_to_send, action, 0);
 }
 
 void add_filename(char msg_to_send[MESSAGE_SIZE], char filename[]) { // TODO : checks to do to not exceed array's size
-    if(msg_to_send[1] == ';'){
+    if (msg_to_send[1] == ';') {
         strcat(msg_to_send, filename);
         msg_to_send[2 + strlen(filename)] = ';';
     }
 }
 
-void insert_between_semicolons(char *input, const char *new_action) {
+void insert_between_semicolons(char *input, const char *string) {
     // Allouer de la mémoire pour la nouvelle chaîne
-    size_t new_length = strlen(new_action);
+    size_t new_length = strlen(string);
     size_t input_length = strlen(input);
     size_t total_length = input_length + new_length + 2;  // +2 pour le point-virgule et le caractère nul
     char *result = (char *)malloc(total_length);
@@ -29,7 +33,7 @@ void insert_between_semicolons(char *input, const char *new_action) {
         strcpy(result, input);
 
         // Concaténer la nouvelle action
-        strcat(result, new_action);
+        strcat(result, string);
 
         // Ajouter un point-virgule à la fin
         strcat(result, ";");
@@ -67,7 +71,9 @@ void extract_between_semicolons_at_index(const char *input, int index, char *out
     }
 
     size_t length = end - start;
-    if (length >= output_size+1) {
+    if (length >= output_size + 1) {
+        printf("end-start: %zu\n",length);
+        printf("output_size: %zu\n",output_size);
         fprintf(stderr, "Output buffer too small.\n");
         return;
     }
@@ -75,7 +81,7 @@ void extract_between_semicolons_at_index(const char *input, int index, char *out
     strncpy(output, start, length);
     output[length] = '\0';  // Ajouter le terminateur de chaîne nulle
 
-    printf("INFORMATION EXTRACT : %s\n",output);
+    printf("INFORMATION EXTRACT : %s\n", output);
 }
 
 size_t total_size_between_semicolons(const char *input, int start_index) {
@@ -98,22 +104,41 @@ size_t total_size_between_semicolons(const char *input, int start_index) {
         return 0;
     }
 
-    printf("TOTAL SIZE FOUND : %ld\n",end-start);
+    printf("TOTAL SIZE FOUND : %ld\n", end - start);
 
     // Calculer la taille totale des éléments entre les délimiteurs
-    return (size_t)(end - start);
+    return (size_t) (end - start);
 }
 
-int is_valid_action(const char *action) {
+int is_action(const char received_action, const char existing_action) {
+    return received_action == existing_action;
+}
+
+int is_valid_action(const char action) {
     return (
-            strcmp(action, ACTION_CREATE) == 0 ||
-            strcmp(action, ACTION_ADD) == 0 ||
-            strcmp(action, ACTION_DOWNLOAD) == 0 ||
-            strcmp(action, ACTION_REMOVE) == 0 ||
-            strcmp(action, ACTION_END) == 0 ||
-            strcmp(action, ACTION_LIST) == 0 ||
-            strcmp(action, ACTION_LOGIN) == 0 ||
-            strcmp(action, ACTION_REGISTER) == 0 ||
-            strcmp(action, ACTION_REPONSE) ==0
+            is_action(action, ACTION_CREATE) ||
+            is_action(action, ACTION_ADD) ||
+            is_action(action, ACTION_DOWNLOAD) ||
+            is_action(action, ACTION_REMOVE) ||
+            is_action(action, ACTION_END) ||
+            is_action(action, ACTION_LIST) ||
+            is_action(action, ACTION_LOGIN) ||
+            is_action(action, ACTION_REGISTER) ||
+            is_action(action, ACTION_REPONSE)
     );
+}
+
+void add_string(char msg_to_send[MESSAGE_SIZE], char *string) { // TODO : checks to do to not exceed array's size
+    if (msg_to_send[1] == ';') {
+        strcat(msg_to_send, string);
+        msg_to_send[2 + strlen(string)] = ';';
+    }
+}
+
+void
+add_string_without_dot(char msg_to_send[MESSAGE_SIZE], char *string) { // TODO : checks to do to not exceed array's size
+    if (msg_to_send[1] == ';') {
+        strcat(msg_to_send, string);
+        msg_to_send[2 + strlen(string)] = ';';
+    }
 }
