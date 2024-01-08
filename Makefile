@@ -10,8 +10,10 @@ COMMON_DEPENDENCIES_LOAD_LIBRARIES = $(TARGET_FOLDER)/load_libraries_client.o $(
 COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT = $(TARGET_FOLDER)/server_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/common_message_management.o
 COMMON_DEPENDENCIES_FILE_MANAGEMENT = $(TARGET_FOLDER)/file_management.o $(TARGET_FOLDER)/file_management_server.o
 COMMON_DEPENDENCIES_CRYPTOGRAPHY = $(TARGET_FOLDER)/rsa.o $(TARGET_FOLDER)/rsa_manager.o $(TARGET_FOLDER)/aes_256_cbc.o $(TARGET_FOLDER)/aes_manager.o
+COMMON_DEPENDENCIES_BASE64 = $(TARGET_FOLDER)/base64encode.o $(TARGET_FOLDER)/base64decode.o
 
-COMMON_DEPENDENCIES = $(COMMON_DEPENDENCIES_UTILS) $(COMMON_DEPENDENCIES_CRYPTOGRAPHY) $(COMMON_DEPENDENCIES_LOAD_LIBRARIES) $(COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT) $(COMMON_DEPENDENCIES_FILE_MANAGEMENT)
+
+COMMON_DEPENDENCIES = $(COMMON_DEPENDENCIES_UTILS) $(COMMON_DEPENDENCIES_BASE64) $(COMMON_DEPENDENCIES_CRYPTOGRAPHY) $(COMMON_DEPENDENCIES_LOAD_LIBRARIES) $(COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT) $(COMMON_DEPENDENCIES_FILE_MANAGEMENT)
 
 all: client server
 
@@ -65,6 +67,12 @@ $(TARGET_FOLDER)/aes_manager.o: aes/aes_manager.c $(TARGET_FOLDER)/aes_256_cbc.o
 
 $(TARGET_FOLDER)/aes_256_cbc.o: aes/aes_256_cbc.c aes/aes_manager.c
 	$(CC) $(CFLAGS) -c $< -o $@ -L/usr/lib -lcrypto -lssl
+
+$(TARGET_FOLDER)/base64encode.o: base64/base64encode.c base64/base64encode.h base64/base64constant.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TARGET_FOLDER)/base64decode.o: base64/base64decode.c base64/base64decode.h base64/base64constant.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@

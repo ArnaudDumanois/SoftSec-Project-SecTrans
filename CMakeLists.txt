@@ -40,4 +40,10 @@ add_executable(SoftSec_Project_SecTrans
         aes/aes_manager.c
         aes/aes_256_cbc.h
         aes/aes_manager.h
+        base64/base64encode.c
+        base64/base64decode.c
+        base64/base64encode.h
+        base64/base64constant.h
+        message_management/client_message_management/client_cryptomessage_management/client_cryptomessage_management.c
+        message_management/server_message_management/server_crytpomessage_management/server_cryptomessage_management.c
 )

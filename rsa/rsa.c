@@ -4,8 +4,17 @@
 #include <stdlib.h>
 #include <openssl/err.h>
 
-#define KEY_LENGTH  2048
+#define KEY_LENGTH  1024
 #define PUB_EXP     65537
+
+
+int get_rsa_size(RSA * key){
+    return RSA_size(key);
+}
+
+int get_max_number_of_bytes_authorized(RSA * key){
+    return RSA_size(key) - 42;
+}
 
 RSA *generate_rsa_keys() {
     RSA *rsa = NULL;

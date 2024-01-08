@@ -4,8 +4,12 @@
 #include <openssl/evp.h>
 #include <openssl/aes.h>
 
-int aes_init(unsigned char *key_data, int key_data_len, unsigned char *salt, EVP_CIPHER_CTX *e_ctx,
-             EVP_CIPHER_CTX *d_ctx);
+void aes_init_encryption_ctx(EVP_CIPHER_CTX **e_ctx, unsigned char key[32], unsigned char iv[16]);
+
+void aes_init_decryption_ctx(EVP_CIPHER_CTX **d_ctx, unsigned char key[32], unsigned char iv[16]);
+
+int
+aes_init(unsigned char *key_data, int key_data_len, unsigned char *salt, unsigned char key[32], unsigned char iv[16]);
 
 unsigned char *aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len);
 
