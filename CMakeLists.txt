@@ -45,5 +45,7 @@ add_executable(SoftSec_Project_SecTrans
         base64/base64encode.h
         base64/base64constant.h
         message_management/client_message_management/client_cryptomessage_management/client_cryptomessage_management.c
-        message_management/server_message_management/server_crytpomessage_management/server_cryptomessage_management.c
+        message_management/server_message_management/server_cryptomessage_management/server_cryptomessage_management.c
+        message_management/client_message_management/client_cryptomessage_management/client_cryptomessage_management.h
+        message_management/server_message_management/server_cryptomessage_management/server_cryptomessage_management.h
 )

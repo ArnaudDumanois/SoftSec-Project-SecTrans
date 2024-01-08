@@ -7,7 +7,7 @@ CRYPTOGRAPHY_COMPILATION_OPTION = -L/usr/lib -lcrypto -lssl
 
 COMMON_DEPENDENCIES_UTILS = $(TARGET_FOLDER)/util.o $(TARGET_FOLDER)/array_utils.o
 COMMON_DEPENDENCIES_LOAD_LIBRARIES = $(TARGET_FOLDER)/load_libraries_client.o $(TARGET_FOLDER)/load_libraries_server.o
-COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT = $(TARGET_FOLDER)/server_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/common_message_management.o
+COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT = $(TARGET_FOLDER)/server_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/common_message_management.o $(TARGET_FOLDER)/client_cryptomessage_management.o $(TARGET_FOLDER)/server_cryptomessage_management.o
 COMMON_DEPENDENCIES_FILE_MANAGEMENT = $(TARGET_FOLDER)/file_management.o $(TARGET_FOLDER)/file_management_server.o
 COMMON_DEPENDENCIES_CRYPTOGRAPHY = $(TARGET_FOLDER)/rsa.o $(TARGET_FOLDER)/rsa_manager.o $(TARGET_FOLDER)/aes_256_cbc.o $(TARGET_FOLDER)/aes_manager.o
 COMMON_DEPENDENCIES_BASE64 = $(TARGET_FOLDER)/base64encode.o $(TARGET_FOLDER)/base64decode.o
@@ -50,7 +50,13 @@ $(TARGET_FOLDER)/load_libraries_client.o: ./load_libraries/load_libraries_client
 $(TARGET_FOLDER)/client_message_management.o: message_management/client_message_management/client_message_management.c message_management/client_message_management/client_message_management.h $(TARGET_FOLDER)/common_message_management.o client.h server.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(TARGET_FOLDER)/client_cryptomessage_management.o: message_management/client_message_management/client_cryptomessage_management/client_cryptomessage_management.c message_management/client_message_management/client_cryptomessage_management/client_cryptomessage_management.h $(TARGET_FOLDER)/common_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/server_message_management.o client.h server.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(TARGET_FOLDER)/server_message_management.o: message_management/server_message_management/server_message_management.c message_management/server_message_management/server_message_management.h $(TARGET_FOLDER)/common_message_management.o client.h server.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TARGET_FOLDER)/server_cryptomessage_management.o: message_management/server_message_management/server_cryptomessage_management/server_cryptomessage_management.c message_management/server_message_management/server_cryptomessage_management/server_cryptomessage_management.h $(TARGET_FOLDER)/common_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/server_message_management.o client.h server.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET_FOLDER)/common_message_management.o: message_management/common_message_management.c message_management/common_message_management.h constants.h

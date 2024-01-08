@@ -31,7 +31,7 @@ unsigned char *read_rsa_public_key(char msg[INPUT_SIZE]) {
     //free(plaintext_msg); // TODO : move this
 }
 
-int get_key_and_iv(char key[32], char iv[16]) {
+int get_key_and_iv(unsigned char key[32], unsigned char iv[16]) {
     EVP_CIPHER_CTX *e_ctx;
     if (init_aes(key, iv) != 0) {
         printf("error init aes\n");
@@ -46,24 +46,25 @@ int get_key_and_iv(char key[32], char iv[16]) {
     printf("iv size : %d\n", EVP_CIPHER_CTX_iv_length(e_ctx));
 
     if (EVP_CIPHER_CTX_key_length(e_ctx) != 32 || EVP_CIPHER_CTX_iv_length(e_ctx) != 16) return -1;
+    return 0;
 }
 
 int send_aes_ciphered_rsa_public_key(unsigned char *public_key, char msg_to_send[INPUT_SIZE]) {
     clear_array(msg_to_send, INPUT_SIZE);
 
-    char key[32];
-    char iv[16];
+    unsigned char key[32];
+    unsigned char iv[16];
 
     if (get_key_and_iv(key, iv) == -1) {
         return -1;
     }
 
     add_action(msg_to_send, ACTION_AES_SEND);
-    add_string(msg_to_send, key);
-    add_string_without_dot(msg_to_send, iv);
+    add_string(msg_to_send, (char *) key);
+    add_string_without_dot(msg_to_send, (char *) iv);
 
 
-    RSA *rsa = read_public_key_from_string(public_key);
+    RSA *rsa = read_public_key_from_string((char *) public_key);
     if (rsa == NULL) return -1;
 
     int public_key_size = get_RSA_size(rsa);
@@ -73,7 +74,7 @@ int send_aes_ciphered_rsa_public_key(unsigned char *public_key, char msg_to_send
     if (msg_size > max_auth || encoded_size >= INPUT_SIZE) return -1;
 
     char *encrypted_msg;
-    int res = encrypt_message(msg, rsa, &encrypted_msg);
+    int res = encrypt_message(msg_to_send, rsa, &encrypted_msg);
     if (res == -1) return -1;
 
     char *encoded = b64_encode((unsigned char *) msg_to_send, msg_size);
