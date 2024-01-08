@@ -74,6 +74,8 @@ void extract_between_semicolons_at_index(const char *input, int index, char *out
 
     strncpy(output, start, length);
     output[length] = '\0';  // Ajouter le terminateur de chaîne nulle
+
+    printf("INFORMATION EXTRACT : %s\n",output);
 }
 
 size_t total_size_between_semicolons(const char *input, int start_index) {
@@ -95,6 +97,8 @@ size_t total_size_between_semicolons(const char *input, int start_index) {
         fprintf(stderr, "Next semicolon not found.\n");
         return 0;
     }
+
+    printf("TOTAL SIZE FOUND : %ld\n",end-start);
 
     // Calculer la taille totale des éléments entre les délimiteurs
     return (size_t)(end - start);

@@ -9,6 +9,7 @@
 #include <string.h>
 #include <openssl/sha.h>
 #include <openssl/rand.h>
+#include <openssl/crypto.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -111,9 +112,14 @@ int authenticate_user(const char *username, const char *password) {
             printf("passwd_inside:\n%s\n",user.hashed_password);
             printf("generate passwd:\n%s\n",hashed_password);
 
-            if(compare(hashed_password, user.hashed_password)==TRUE) {
+            if(compare(hashed_password, user.hashed_password)==TRUE){
+
+            }
+            //memcmp(hashed_password,user.hashed_password, MAX_PASSWORD_LENGTH)==0
+            if(CRYPTO_memcmp(hashed_password,user.hashed_password,MAX_PASSWORD_LENGTH)) {
                 printf("AUTH DONE !\n");
                 authentication_result = AUTH_DONE; // Authentification réussie
+                /* PAS ENCORE POSSIBLE
                 char *folder_name = malloc(sizeof(user.username));
                 strcat(folder_name, user.username);
                 char *folder_hashedname = malloc(sizeof(user.username));
@@ -126,6 +132,7 @@ int authenticate_user(const char *username, const char *password) {
                 DIR *user_dir = opendir(final_user_path);
                 struct dirent *dirp;
                 while ((dirp = readdir(user_dir)) != NULL) printf("%s\n", dirp->d_name);
+                 */
             }
             else{
                 printf("AUTH ECHOUEE ! \n");
