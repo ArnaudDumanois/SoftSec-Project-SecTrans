@@ -117,14 +117,14 @@ int manage_request(char message[MESSAGE_SIZE]) {
         if(username_size>(size_t)MAX_USERNAME_LENGTH){res = ERROR_USERNAME_TOO_LONG;printf("USERNAME TOO LONG !\n");}
         else{
             char *usrname = malloc(username_size+1);
-            extract_between_semicolons_at_index(message,1,usrname,sizeof(usrname));
+            extract_between_semicolons_at_index(message,1,usrname, strlen(usrname));
             if(is_correctusername(usrname)==FALSE){res=ERROR_BAD_USERNAME_INPUT;printf("BAD USERNAME\n");free(usrname);}
             else{
                 size_t passwd_size = total_size_between_semicolons(message,2);
                 if(passwd_size>(size_t)MAX_PASSWORD_LENGTH){res=ERROR_PASSWORD_TOO_LONG;printf("PASSWORD TOO LONG !\n");free(usrname);}
                 else{
                     char *passwd = malloc(passwd_size+1);
-                    extract_between_semicolons_at_index(message,2,passwd, sizeof(passwd));
+                    extract_between_semicolons_at_index(message,2,passwd, strlen(passwd));
                     res = save_user(usrname,passwd);
                     free(passwd);
                     free(usrname);
