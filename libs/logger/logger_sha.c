@@ -1,9 +1,4 @@
-//
-// Created by Julien on 03/01/2024.
-//
-
 #include "logger_sha.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

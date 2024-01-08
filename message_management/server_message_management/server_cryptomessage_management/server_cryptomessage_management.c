@@ -9,7 +9,7 @@
 #include "../../../rsa/rsa_manager.h"
 #include "../../../base64/base64encode.h"
 
-unsigned char *decode_msg(char msg[INPUT_SIZE]) {
+unsigned char *decode_msg(char msg[MESSAGE_SIZE]) {
     size_t decoded_size = b64_decoded_size(msg);
     unsigned char *out = malloc(decoded_size);
     if (b64_decode(msg, out, decoded_size) == -1) {
@@ -24,7 +24,7 @@ char *get_public_key_from_message(char *msg) {
     return tok;
 }
 
-unsigned char *read_rsa_public_key(char msg[INPUT_SIZE]) {
+unsigned char *read_rsa_public_key(char msg[MESSAGE_SIZE]) {
     char *plaintext_msg = (char *) decode_msg(msg);
     unsigned char *public_key = (unsigned char *) get_public_key_from_message(plaintext_msg);
     return public_key;
@@ -49,8 +49,8 @@ int get_key_and_iv(unsigned char key[32], unsigned char iv[16]) {
     return 0;
 }
 
-int send_aes_ciphered_rsa_public_key(unsigned char *public_key, char msg_to_send[INPUT_SIZE]) {
-    clear_array(msg_to_send, INPUT_SIZE);
+int send_aes_ciphered_rsa_public_key(unsigned char *public_key, char msg_to_send[MESSAGE_SIZE]) {
+    clear_array(msg_to_send, MESSAGE_SIZE);
 
     unsigned char key[32];
     unsigned char iv[16];
@@ -71,7 +71,7 @@ int send_aes_ciphered_rsa_public_key(unsigned char *public_key, char msg_to_send
     int msg_size = (public_key_size * 2) + 3;
     int max_auth = get_max_number_of_bytes_auth(rsa);
     size_t encoded_size = b64_encoded_size(msg_size);
-    if (msg_size > max_auth || encoded_size >= INPUT_SIZE) return -1;
+    if (msg_size > max_auth || encoded_size >= MESSAGE_SIZE) return -1;
 
     char *encrypted_msg;
     int res = encrypt_message(msg_to_send, rsa, &encrypted_msg);
@@ -79,13 +79,13 @@ int send_aes_ciphered_rsa_public_key(unsigned char *public_key, char msg_to_send
 
     char *encoded = b64_encode((unsigned char *) msg_to_send, msg_size);
     sending(encoded, CLIENT_PORT);
-    clear_array(msg_to_send, INPUT_SIZE);
+    clear_array(msg_to_send, MESSAGE_SIZE);
 
     RSA_free(rsa);
     free(public_key);
     free(encoded);
     free(encrypted_msg);
-    clear_array(msg_to_send, INPUT_SIZE);
+    clear_array(msg_to_send, MESSAGE_SIZE);
 
     return 0;
 }

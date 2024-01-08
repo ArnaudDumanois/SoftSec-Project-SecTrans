@@ -11,6 +11,7 @@
 #include <regex.h>
 #include "../common_message_management.h"
 #include "../../libs/logger/logger_sha.h"
+#include "../../actions.h"
 
 void list_files(char msg_to_send[MESSAGE_SIZE]) { // TODO : to finish
     DIR *d;
@@ -24,9 +25,9 @@ void list_files(char msg_to_send[MESSAGE_SIZE]) { // TODO : to finish
     }
 }
 
-void manage_file(const char *action, char filename[],
+void manage_file(const char action, char filename[],
                  char file_content_to_write[]) { // TODO : checks when write returns 0 byte written, and send stop to client
-    if (strcmp(action,ACTION_CREATE)==0 || strcmp(action,ACTION_ADD)==0) {
+    if (is_action(action,ACTION_CREATE) || is_action(action,ACTION_ADD)) {
         printf("ACTION_CREATE\n");
         //int nb_bytes_wrote;
         //printf("DOES FILES EXIST : %d\n", does_file_exist(filename));
@@ -36,13 +37,13 @@ void manage_file(const char *action, char filename[],
         }
         write_file_content(filename, file_content_to_write, strlen(file_content_to_write));
         //printf("nb bytes written : %d\n", nb_bytes_wrote);
-    } else if (strcmp(action,ACTION_END)==0) {
+    } else if (is_action(action,ACTION_END)) {
         printf("The file has been created !\n");
     }
 }
 
 
-void sendingResponse(char *action,int res){
+void sendingResponse(char action,int res){
     printf("SERVER RESPONSE\n");
     client_sendResponse(action,res,CLIENT_PORT);
 }
@@ -61,10 +62,10 @@ boolean is_correctusername(char *usrname) {
 
 int manage_request(char message[MESSAGE_SIZE]) {
     printf("MANAGE REQUEST\n");
-    char *action = malloc(total_size_between_semicolons(message,0)+1);
-    extract_between_semicolons_at_index(message,0,action, sizeof(action));
+    char action = message[0];
 
-    if (strcmp(action,ACTION_CREATE)==0 || strcmp(action,ACTION_ADD)==0 || strcmp(action,ACTION_END)==0) {
+    if (is_action(action,ACTION_CREATE) || is_action(action,ACTION_ADD) ||
+    is_action(action,ACTION_END)) {
         char *filename = malloc(total_size_between_semicolons(message,1)+1);
         extract_between_semicolons_at_index(message,1,filename, sizeof(filename));
 
@@ -75,7 +76,7 @@ int manage_request(char message[MESSAGE_SIZE]) {
         free(filename);
         clear_array(message, MESSAGE_SIZE);
     }
-    else if (strcmp(action,ACTION_DOWNLOAD)==0) {
+    else if (is_action(action,ACTION_DOWNLOAD)) {
         char *filename = malloc(total_size_between_semicolons(message,1)+1);
         extract_between_semicolons_at_index(message,1,filename, sizeof(filename));
         char *filepath = get_complete_filepath_storing(filename);
@@ -85,7 +86,7 @@ int manage_request(char message[MESSAGE_SIZE]) {
         free(filepath);
         clear_array(message, MESSAGE_SIZE);
     }
-    else if (strcmp(action,ACTION_LOGIN)==0) {
+    else if (is_action(action,ACTION_LOGIN)) {
         printf("LOGIN ACTION !\n");
         int res;
         size_t username_size = total_size_between_semicolons(message,1);
@@ -110,7 +111,7 @@ int manage_request(char message[MESSAGE_SIZE]) {
         }
         sendingResponse(action,res);
     }
-    else if (strcmp(action,ACTION_REGISTER)==0){
+    else if (is_action(action,ACTION_REGISTER)){
         printf("REGISTER ACTION !\n");
         int res;
         size_t username_size = total_size_between_semicolons(message,1);
@@ -135,7 +136,7 @@ int manage_request(char message[MESSAGE_SIZE]) {
         }
         sendingResponse(action,res);
     }
-    else if (strcmp(action,ACTION_REPONSE)==0) {
+    else if (is_action(action,ACTION_REPONSE)) {
         printf("REPONSE RECEIVED !");
         char *res = malloc(total_size_between_semicolons(message, 2));
         extract_between_semicolons_at_index(message, 2, res, sizeof(res));
