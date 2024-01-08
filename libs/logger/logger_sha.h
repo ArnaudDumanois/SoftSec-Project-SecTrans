@@ -31,7 +31,7 @@
 typedef struct {
     char username[MAX_USERNAME_LENGTH];
     char password_salt[SALT_SIZE];
-    char hashed_password[MAX_PASSWORD_LENGTH];
+    char hashed_password[32];
     char global_salt[SALT_SIZE];
 } User;
 
