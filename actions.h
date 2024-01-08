@@ -7,5 +7,7 @@
 #define ACTION_REMOVE 'R'
 #define ACTION_END 'E'
 #define ACTION_LIST 'L'
+#define ACTION_PUB_KEY_SEND 'P'
+#define ACTION_AES_SEND 'X'
 
 #endif //SOFTSEC_PROJECT_SECTRANS_ACTIONS_H

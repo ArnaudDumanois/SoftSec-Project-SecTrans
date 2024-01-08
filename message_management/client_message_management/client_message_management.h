@@ -3,5 +3,6 @@
 
 void send_file(char filepath[], int port);
 void download_file(char filename[], int port);
+void sending(char msg_to_send[INPUT_SIZE], int port);
 
 #endif //SOFTSEC_PROJECT_SECTRANS_CLIENT_MESSAGE_MANAGEMENT_H
