@@ -1,4 +1,5 @@
 #include "auth.h"
+#include "../utils/bool_type.h"
 #include <stdio.h>
 #include <string.h>
 

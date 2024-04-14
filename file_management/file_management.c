@@ -68,7 +68,7 @@ boolean is_filepath_a_file(char *filepath) {
     return S_ISREG(stats.st_mode) != 0 ? TRUE : FALSE;
 }
 
-int open_file(char filepath[INPUT_SIZE], short flag) {
+int open_file(char filepath[MESSAGE_SIZE], short flag) {
     int fd = open(filepath, flag);
     if (fd == -1) {
         perror("Error");
@@ -78,7 +78,7 @@ int open_file(char filepath[INPUT_SIZE], short flag) {
     return fd;
 }
 
-boolean is_filepath_well_formed(char filepath[INPUT_SIZE]) {
+boolean is_filepath_well_formed(char filepath[MESSAGE_SIZE]) {
     regex_t regex;
     if ((regcomp(&regex, "^((\\.{1,2}\\/)*|~\\/)?([A-Za-z0-9_]+\\/)+[A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)?$",
                  REG_EXTENDED)) == 0) {

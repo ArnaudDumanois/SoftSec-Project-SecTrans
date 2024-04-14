@@ -48,4 +48,5 @@ add_executable(SoftSec_Project_SecTrans
         message_management/server_message_management/server_cryptomessage_management/server_cryptomessage_management.c
         message_management/client_message_management/client_cryptomessage_management/client_cryptomessage_management.h
         message_management/server_message_management/server_cryptomessage_management/server_cryptomessage_management.h
+        libs/logger/logger_sha.c
 )

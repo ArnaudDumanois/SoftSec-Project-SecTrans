@@ -12,20 +12,32 @@ COMMON_DEPENDENCIES_FILE_MANAGEMENT = $(TARGET_FOLDER)/file_management.o $(TARGE
 COMMON_DEPENDENCIES_CRYPTOGRAPHY = $(TARGET_FOLDER)/rsa.o $(TARGET_FOLDER)/rsa_manager.o $(TARGET_FOLDER)/aes_256_cbc.o $(TARGET_FOLDER)/aes_manager.o
 COMMON_DEPENDENCIES_BASE64 = $(TARGET_FOLDER)/base64encode.o $(TARGET_FOLDER)/base64decode.o
 
-
 COMMON_DEPENDENCIES = $(COMMON_DEPENDENCIES_UTILS) $(COMMON_DEPENDENCIES_BASE64) $(COMMON_DEPENDENCIES_CRYPTOGRAPHY) $(COMMON_DEPENDENCIES_LOAD_LIBRARIES) $(COMMON_DEPENDENCIES_MESSAGE_MANAGEMENT) $(COMMON_DEPENDENCIES_FILE_MANAGEMENT)
+
+CLIENT_DEPENDENCIES = $(TARGET_FOLDER)/messages.o $(TARGET_FOLDER)/logger_sha.o
+SERVER_DEPENDENCIES = $(TARGET_FOLDER)/logger_sha.o
+EXTERNAL_LIBS = /usr/lib
 
 all: client server
 
-client: client.o $(COMMON_DEPENDENCIES)
-	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/client.o $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lclient $(CRYPTOGRAPHY_COMPILATION_OPTION) $(DYNLIB)
+client: client.o $(CLIENT_DEPENDENCIES) $(COMMON_DEPENDENCIES)
+	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/client.o $(CLIENT_DEPENDENCIES) $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lclient $(CRYPTOGRAPHY_COMPILATION_OPTION) $(DYNLIB)
 
-server: server.o $(COMMON_DEPENDENCIES) $(TARGET_FOLDER)/rsa.o
-	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/server.o $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lserver $(CRYPTOGRAPHY_COMPILATION_OPTION) $(DYNLIB)
+server: server.o $(COMMON_DEPENDENCIES)
+	$(CC) $(CFLAGS) -o $(TARGET_FOLDER)/$@ $(TARGET_FOLDER)/server.o $(SERVER_DEPENDENCIES) $(COMMON_DEPENDENCIES) -L$(DYNLIB_FOLDER) -lserver $(CRYPTOGRAPHY_COMPILATION_OPTION) $(DYNLIB)
 
-client.o: client.c client.h $(COMMON_DEPENDENCIES)
+##PARTIE CLIENT
+
+client.o: client.c client.h $(CLIENT_DEPENDENCIES) $(COMMON_DEPENDENCIES)
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@ $(DYNLIB)
 
+$(TARGET_FOLDER)/messages.o: ./libs/client_libs/messages.c ./libs/client_libs/messages.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TARGET_FOLDER)/logger_sha.o: ./libs/logger/logger_sha.c ./libs/logger/logger_sha.h
+	 $(CC) $(CFLAGS) -c $< -o $@ -L$(EXTERNAL_LIBS) -lcrypto
+
+##PARTIE SERVEUR
 server.o: server.c server.h $(COMMON_DEPENDENCIES)
 	$(CC) $(CFLAGS) -c $< -o $(TARGET_FOLDER)/$@ $(DYNLIB)
 
@@ -53,7 +65,7 @@ $(TARGET_FOLDER)/client_message_management.o: message_management/client_message_
 $(TARGET_FOLDER)/client_cryptomessage_management.o: message_management/client_message_management/client_cryptomessage_management/client_cryptomessage_management.c message_management/client_message_management/client_cryptomessage_management/client_cryptomessage_management.h $(TARGET_FOLDER)/common_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/server_message_management.o client.h server.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET_FOLDER)/server_message_management.o: message_management/server_message_management/server_message_management.c message_management/server_message_management/server_message_management.h $(TARGET_FOLDER)/common_message_management.o client.h server.h
+$(TARGET_FOLDER)/server_message_management.o: message_management/server_message_management/server_message_management.c message_management/server_message_management/server_message_management.h $(TARGET_FOLDER)/common_message_management.o $(TARGET_FOLDER)/logger_sha.o client.h server.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET_FOLDER)/server_cryptomessage_management.o: message_management/server_message_management/server_cryptomessage_management/server_cryptomessage_management.c message_management/server_message_management/server_cryptomessage_management/server_cryptomessage_management.h $(TARGET_FOLDER)/common_message_management.o $(TARGET_FOLDER)/client_message_management.o $(TARGET_FOLDER)/server_message_management.o client.h server.h
